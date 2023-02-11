@@ -251,9 +251,9 @@ function getSubmissionInfo(submission) {
  * @param {set} blacklist - A set containing the domains to filter out.
  */
 function filterSubmissionsBySource(blacklist) {
-    const submissions = document.querySelectorAll('.athing');
+    const submissions = getSubmissions();
 
-    const submissionTable = document.querySelectorAll('.athing')[0].parentElement;
+    const submissionTable = getSubmissionTable();
 
     let somethingRemoved = false;
 
@@ -288,9 +288,9 @@ function filterSubmissionsBySource(blacklist) {
  * @param {set} blacklist - A set containing the title substrings to filter out.
  */
 function filterSubmissionsByTitle(blacklist) {
-    const submissions = document.querySelectorAll('.athing');
+    const submissions = getSubmissions();
 
-    const submissionTable = document.querySelectorAll('.athing')[0].parentElement;
+    const submissionTable = getSubmissionTable();
 
     let somethingRemoved = false;
 
@@ -355,6 +355,20 @@ function getTopRank() {
     const topRank = getRank(submissions[0]);
 
     return topRank
+}
+
+/**
+ * Get the thing holding the list of submissions.
+ */
+function getSubmissionTable() {
+    return document.querySelectorAll('.athing')[0].parentElement;
+}
+
+/**
+ * Get the list of submissions.
+ */
+function getSubmissions() {
+    return document.querySelectorAll('.athing');
 }
 
 /**
