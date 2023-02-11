@@ -35,5 +35,3 @@ All titles containing the string "Amazon" will be filtered. This filtering is ca
 HN Blacklist is a [userscript](https://en.wikipedia.org/wiki/Userscript) which can be run with tools like Greasemonkey and Tampermonkey right in your browser.
 
 Find it on [Greasy Fork](https://greasyfork.org/en/scripts/427213-hn-blacklist).
-
-For the Firefox add-on, see [here](https://github.com/booleandilemma/hn-blacklist-firefox).
