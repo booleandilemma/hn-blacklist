@@ -5,7 +5,8 @@
 // @include      https://news.ycombinator.com/news*
 // @version      1.1
 // @grant        none
-// @license      GPL-3.0-or-later
+// @license         GPL-3.0-or-later
+// @namespace https://greasyfork.org/users/777592
 // ==/UserScript==
 
 const UserScriptName = "HN Blacklist";
@@ -15,6 +16,7 @@ function main() {
     // Add sources you don't want to see here.
     const blacklist = new Set(
         [
+          "atlanticcouncil.org"
         ]
     );
 
@@ -253,7 +255,7 @@ function getSubmissionInfo(submission) {
 function filterSubmissionsBySource(blacklist) {
     const submissions = document.querySelectorAll('.athing');
 
-    const submissionTable = document.querySelectorAll('.itemlist')[0];
+    const submissionTable = document.querySelectorAll('.athing')[0].parentElement;
 
     let somethingRemoved = false;
 
@@ -290,7 +292,7 @@ function filterSubmissionsBySource(blacklist) {
 function filterSubmissionsByTitle(blacklist) {
     const submissions = document.querySelectorAll('.athing');
 
-    const submissionTable = document.querySelectorAll('.itemlist')[0];
+    const submissionTable = document.querySelectorAll('.athing')[0].parentElement;
 
     let somethingRemoved = false;
 
