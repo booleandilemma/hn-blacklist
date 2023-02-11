@@ -1,0 +1,23 @@
+{
+  "name": "hn-blacklist",
+  "version": "1.2.0",
+  "description": "Hide Hacker News submissions from sources you don't want to see",
+  "main": "hn-blacklist.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/booleandilemma/hn-blacklist.git"
+  },
+  "author": "booleandilemma",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/booleandilemma/hn-blacklist/issues"
+  },
+  "homepage": "https://github.com/booleandilemma/hn-blacklist#readme",
+  "devDependencies": {
+    "eslint": "^8.34.0",
+    "eslint-config-airbnb-base": "^15.0.0"
+  }
+}
