@@ -4,31 +4,34 @@ Tired of seeing articles from certain sources on Hacker News?
 
 HN Blacklist is for you.
 
-Simply modify hn-blacklist.js - adding the domains of sites you don't want to see articles from:
+## Filtering by domain
+
+Simply modify `hn-blacklist.js` - adding the domains of sites you don't want to see articles from:
 
 ```
     // Add sources you don't want to see here.
     const blacklist = new Set(
         [
-         "nautil.us",
-         "fs.blog"
+         'nautil.us',
+         'fs.blog'
         ]
     );
 ```
 
-It's also possible to filter articles by title substrings. If you're tired of seeing articles mentioning "Amazon",
-add the following to the blacklist:
+## Filtering by title text
+
+If you're tired of seeing articles mentioning "ChatGPT", for example, add the following to the blacklist:
 
 ```
     // Add sources you don't want to see here.
     const blacklist = new Set(
         [
-         "title:Amazon"
+         'title:ChatGPT'
         ]
     );
 ```
 
-All titles containing the string "Amazon" will be filtered. This filtering is case-insensitive.
+All titles containing the string "ChatGPT" will be filtered out. This filtering is case-insensitive.
 
 ---
 
