@@ -16,8 +16,8 @@ Simply modify `hn-blacklist.js` - adding the domains of sites you don't want to 
 // Add sources you don't want to see here.
 const blacklist = new Set(
     [
-        'nautil.us',
-        'fs.blog'
+        'source:nautil.us',
+        'source:fs.blog'
     ]
 );
 ```
