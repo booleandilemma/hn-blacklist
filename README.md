@@ -13,13 +13,13 @@ Find it on [Greasy Fork](https://greasyfork.org/en/scripts/427213-hn-blacklist),
 Simply modify `hn-blacklist.js` - adding the domains of sites you don't want to see articles from:
 
 ```
-    // Add sources you don't want to see here.
-    const blacklist = new Set(
-        [
-         'nautil.us',
-         'fs.blog'
-        ]
-    );
+// Add sources you don't want to see here.
+const blacklist = new Set(
+    [
+        'nautil.us',
+        'fs.blog'
+    ]
+);
 ```
 
 ## Filtering by title text
@@ -27,12 +27,12 @@ Simply modify `hn-blacklist.js` - adding the domains of sites you don't want to 
 If you're tired of seeing articles mentioning "ChatGPT", for example, add the following to the blacklist:
 
 ```
-    // Add sources you don't want to see here.
-    const blacklist = new Set(
-        [
-         'title:ChatGPT'
-        ]
-    );
+// Add sources you don't want to see here.
+const blacklist = new Set(
+    [
+        'title:ChatGPT'
+    ]
+);
 ```
 
 All titles containing the string "ChatGPT" will be filtered out. This filtering is case-insensitive.
