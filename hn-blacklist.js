@@ -10,6 +10,23 @@
 
 const UserScriptName = 'HN Blacklist';
 
+class Entry {
+  constructor(prefixedInput) {
+    this.buildEntry(prefixedInput);
+  }
+
+  buildEntry(prefixedInput) {
+    const prefix = prefixedInput.substring(0, prefixedInput.indexOf(':'));
+    const text = prefixedInput.substring(prefixedInput.indexOf(':') + 1);
+
+    this.prefix = prefix;
+    this.text = text;
+
+    console.log(this.prefix);
+    console.log(this.text);
+  }
+}
+
 /**
  * Logs an info message to the console.
  * @param {string} message - Specifies the message to log.
@@ -261,26 +278,24 @@ function getSubmissions() {
  * current HN page with a domain source contained in the specified blacklist.
  * Returns a boolean indicating
  * whether or not at least one submission was filtered out.
- * @param {set} blacklist - A set containing entries to filter out.
+ * @param {set} blacklistEntries - A list containing entries to filter on.
  */
-function filterSubmissionsBySource(blacklist) {
+function filterSubmissionsBySource(blacklistEntries) {
   const submissions = getSubmissions();
 
   const submissionTable = getSubmissionTable();
 
   let somethingRemoved = false;
 
-  blacklist.forEach((entry) => {
-    if (!entry.startsWith('source:')) {
+  blacklistEntries.forEach((entry) => {
+    if (entry.prefix !== 'source') {
       return;
     }
-
-    const filter = entry.substring(entry.indexOf('source:') + 'source:'.length).toLowerCase();
 
     for (let i = 0; i < submissions.length; i++) {
       const submissionInfo = getSubmissionInfo(submissions[i]);
 
-      if (submissionInfo.source !== null && submissionInfo.source === filter) {
+      if (submissionInfo.source !== null && submissionInfo.source === entry.text.toLowerCase()) {
         logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
 
         // Delete the submission
@@ -305,26 +320,24 @@ function filterSubmissionsBySource(blacklist) {
  * current HN page with a title substring contained in the specified blacklist.
  * Returns a boolean indicating
  * whether or not at least one submission was filtered out.
- * @param {set} blacklist - A set containing entries to filter out.
+ * @param {set} blacklistEntries - A list containing entries to filter on.
  */
-function filterSubmissionsByTitle(blacklist) {
+function filterSubmissionsByTitle(blacklistEntries) {
   const submissions = getSubmissions();
 
   const submissionTable = getSubmissionTable();
 
   let somethingRemoved = false;
 
-  blacklist.forEach((entry) => {
-    if (!entry.startsWith('title:')) {
+  blacklistEntries.forEach((entry) => {
+    if (entry.prefix !== 'title') {
       return;
     }
-
-    const filter = entry.substring(entry.indexOf('title:') + 'title:'.length).toLowerCase();
 
     for (let j = 0; j < submissions.length; j++) {
       const submissionInfo = getSubmissionInfo(submissions[j]);
 
-      if (submissionInfo.title.toLowerCase().includes(filter)) {
+      if (submissionInfo.title.toLowerCase().includes(entry.text.toLowerCase())) {
         logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
 
         // Delete the submission
@@ -348,27 +361,25 @@ function filterSubmissionsByTitle(blacklist) {
  * Filters out (i.e. deletes) all submissions on the
  * current HN page submitted by the specified user.
  * Returns a boolean indicating whether or not at least one submission was filtered out.
- * @param {set} blacklist - A set containing entries to filter out.
+ * @param {set} blacklistEntries - A list containing entries to filter on.
  */
-function filterSubmissionsByUser(blacklist) {
+function filterSubmissionsByUser(blacklistEntries) {
   const submissions = getSubmissions();
 
   const submissionTable = getSubmissionTable();
 
   let somethingRemoved = false;
 
-  blacklist.forEach((entry) => {
-    if (!entry.startsWith('user:')) {
+  blacklistEntries.forEach((entry) => {
+    if (entry.prefix !== 'user') {
       return;
     }
-
-    const filter = entry.substring(entry.indexOf('user:') + 'user:'.length).toLowerCase();
 
     for (let j = 0; j < submissions.length; j++) {
       const submissionInfo = getSubmissionInfo(submissions[j]);
 
       if (submissionInfo.submitter !== null
-        && submissionInfo.submitter.toLowerCase().includes(filter)) {
+        && submissionInfo.submitter.toLowerCase().includes(entry.text.toLowerCase())) {
         logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
 
         // Delete the submission
@@ -438,19 +449,51 @@ function getTopRank() {
   return topRank;
 }
 
+function isValidInput(input) {
+  if (input.startsWith('source:')
+  || input.startsWith('title:')
+  || input.startsWith('user:')) {
+    return true;
+  }
+
+  return false;
+}
+
 function warnAboutInvalidBlacklistEntries(blacklist) {
-  blacklist.forEach((entry) => {
-    if (!entry.startsWith('source:')
-    && !entry.startsWith('title:')
-    && !entry.startsWith('user:')) {
-      logWarning(`'${entry}' is an invalid entry and will be skipped. `
+  blacklist.forEach((input) => {
+    if (!isValidInput(input)) {
+      logWarning(`'${input}' is an invalid entry and will be skipped. `
       + 'Entries must begin with \'source:\', \'title:\', or \'user:\'.');
     }
   });
 }
 
+function buildEntries(blacklist) {
+  const entries = [];
+
+  blacklist.forEach((input) => {
+    if (isValidInput(input)) {
+      entries.push(
+        new Entry(input),
+      );
+    }
+  });
+
+  return entries;
+}
+
 function main() {
-  // Add sources you don't want to see here.
+  /*
+   * Add sources you don't want to see here.
+   *
+   * Three types of sources can be filtered on:
+   *
+   * 1) 'source:' will filter the submission by the domain it comes from.
+   * 2) 'title:' will filter the submission by the words contained in the title.
+   * 3) 'user:' will filter the submission by the user who submitted it.
+   *
+   * For example, 'source:example.com' will filter all submissions coming from 'example.com'.
+  */
   const blacklist = new Set(
     [
     ],
@@ -458,9 +501,11 @@ function main() {
 
   warnAboutInvalidBlacklistEntries(blacklist);
 
+  const blacklistEntries = buildEntries(blacklist);
+
   const topRank = getTopRank();
 
-  const somethingRemoved = filterSubmissions(blacklist);
+  const somethingRemoved = filterSubmissions(blacklistEntries);
 
   if (!somethingRemoved) {
     logInfo('Nothing filtered');
