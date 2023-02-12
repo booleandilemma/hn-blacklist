@@ -37,7 +37,7 @@ const blacklist = new Set(
 
 ## Filtering by user
 
-If you want to filter out submissions by a certain user, prepend the string `user:` followed by the username whose submissions you want to filter out:
+If you want to filter out submissions by a certain user, prefix your blacklist entry with the string `user:`, followed by the username.
 
 ```
 // Add sources you don't want to see here.
