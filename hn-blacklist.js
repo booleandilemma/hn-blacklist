@@ -181,6 +181,33 @@ function getTitleInfo(submission) {
   return null;
 }
 
+function getSubmitter(submission) {
+  if (submission === null) {
+    logWarning('submission is null');
+
+    return null;
+  }
+
+  const { nextSibling } = submission;
+  const userLink = nextSibling.querySelector('.hnuser');
+
+  if (userLink == null) {
+    logWarning('userLink is null');
+
+    return null;
+  }
+
+  const hrefUser = userLink.getAttribute('href');
+
+  if (hrefUser == null) {
+    logWarning('hrefUser is null');
+
+    return null;
+  }
+
+  return hrefUser.replace('user?id=', '');
+}
+
 /**
  * Returns an object representing the different parts of the specified submission.
  * These are: title, source, rank, and rowIndex.
@@ -194,6 +221,7 @@ function getSubmissionInfo(submission) {
   const titleInfo = getTitleInfo(submission);
 
   const rank = getRank(submission);
+  const submitter = getSubmitter(submission);
   const titleText = getTitleText(titleInfo);
   const source = getSource(titleInfo);
   const { rowIndex } = submission;
@@ -201,6 +229,7 @@ function getSubmissionInfo(submission) {
   return {
     title: titleText,
     source,
+    submitter,
     rank,
     rowIndex,
   };
@@ -302,6 +331,50 @@ function filterSubmissionsByTitle(blacklist) {
 
 /**
  * Filters out (i.e. deletes) all submissions on the
+ * current HN page with a title substring contained in the specified blacklist.
+ * Returns a boolean indicating
+ * whether or not at least one submission was filtered out.
+ * @param {set} blacklist - A set containing the title substrings to filter out.
+ */
+function filterSubmissionsByUser(blacklist) {
+  const submissions = getSubmissions();
+
+  const submissionTable = getSubmissionTable();
+
+  let somethingRemoved = false;
+
+  blacklist.forEach((entry) => {
+    if (!entry.startsWith('user:')) {
+      return;
+    }
+
+    const filter = entry.substring(entry.indexOf('user:') + 'user:'.length).toLowerCase();
+
+    for (let j = 0; j < submissions.length; j++) {
+      const submissionInfo = getSubmissionInfo(submissions[j]);
+
+      if (submissionInfo.submitter.toLowerCase().includes(filter)) {
+        logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
+
+        // Delete the submission
+        submissionTable.deleteRow(submissionInfo.rowIndex);
+
+        // Delete the submission comments link
+        submissionTable.deleteRow(submissionInfo.rowIndex);
+
+        // Delete the spacer row after the submission
+        submissionTable.deleteRow(submissionInfo.rowIndex);
+
+        somethingRemoved = true;
+      }
+    }
+  });
+
+  return somethingRemoved;
+}
+
+/**
+ * Filters out (i.e. deletes) all submissions on the
  * current HN page matching an entry in the specified blacklist.
  * Returns a boolean indicating
  * whether or not at least one submission was filtered out.
@@ -310,8 +383,11 @@ function filterSubmissionsByTitle(blacklist) {
 function filterSubmissions(blacklist) {
   const submissionFilteredBySource = filterSubmissionsBySource(blacklist);
   const submissionFilteredByTitle = filterSubmissionsByTitle(blacklist);
+  const submissionFilteredByUser = filterSubmissionsByUser(blacklist);
 
-  return submissionFilteredBySource || submissionFilteredByTitle;
+  return submissionFilteredBySource
+         || submissionFilteredByTitle
+         || submissionFilteredByUser;
 }
 
 /**
