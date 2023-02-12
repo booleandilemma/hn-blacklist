@@ -353,7 +353,8 @@ function filterSubmissionsByUser(blacklist) {
     for (let j = 0; j < submissions.length; j++) {
       const submissionInfo = getSubmissionInfo(submissions[j]);
 
-      if (submissionInfo.submitter.toLowerCase().includes(filter)) {
+      if (submissionInfo.submitter !== null
+        && submissionInfo.submitter.toLowerCase().includes(filter)) {
         logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
 
         // Delete the submission
