@@ -36,5 +36,3 @@ const blacklist = new Set(
 ```
 
 All titles containing the string "ChatGPT" will be filtered out. This filtering is case-insensitive.
-
----
