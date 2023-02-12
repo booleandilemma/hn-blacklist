@@ -10,26 +10,20 @@
 
 const UserScriptName = 'HN Blacklist';
 
-function main() {
-  // Add sources you don't want to see here.
-  const blacklist = new Set(
-    [
-    ],
-  );
+/**
+ * Logs an info message to the console.
+ * @param {string} message - Specifies the message to log.
+ */
+function logInfo(message) {
+  console.info(`${UserScriptName}: ${message}`);
+}
 
-  const topRank = getTopRank();
-
-  const somethingRemoved = filterSubmissions(blacklist);
-
-  if (!somethingRemoved) {
-    logInfo('Nothing filtered');
-
-    return;
-  }
-
-  logInfo('Reindexing submissions');
-
-  reindexSubmissions(topRank);
+/**
+ * Logs a warning message to the console.
+ * @param {string} message - Specifies the message to log.
+ */
+function logWarning(message) {
+  console.warn(`${UserScriptName}: ${message}`);
 }
 
 /**
@@ -41,7 +35,7 @@ function setRank(submission, newRank) {
   if (submission === null) {
     logWarning('submission is null');
 
-    return null;
+    return;
   }
 
   let titleIndex = 0;
@@ -49,7 +43,7 @@ function setRank(submission, newRank) {
   for (let i = 0; i < submission.childNodes.length; i++) {
     const childNode = submission.childNodes[i];
 
-    if (childNode.className == 'title') {
+    if (childNode.className === 'title') {
       titleIndex++;
     }
 
@@ -59,7 +53,7 @@ function setRank(submission, newRank) {
       if (rank === null) {
         logWarning('rank is null');
 
-        return null;
+        return;
       }
 
       childNode.innerText = `${newRank}.`;
@@ -133,7 +127,7 @@ function getRank(submission) {
   for (let i = 0; i < submission.childNodes.length; i++) {
     const childNode = submission.childNodes[i];
 
-    if (childNode.className == 'title') {
+    if (childNode.className === 'title') {
       titleIndex++;
     }
 
@@ -146,7 +140,7 @@ function getRank(submission) {
         return null;
       }
 
-      return parseInt(rank.replace('.', '').trim());
+      return parseInt(rank.replace('.', '').trim(), 10);
     }
   }
 
@@ -173,7 +167,7 @@ function getTitleInfo(submission) {
   for (let i = 0; i < submission.childNodes.length; i++) {
     const childNode = submission.childNodes[i];
 
-    if (childNode.className == 'title') {
+    if (childNode.className === 'title') {
       titleIndex++;
     }
 
@@ -213,17 +207,17 @@ function getSubmissionInfo(submission) {
 }
 
 /**
- * Filters out (i.e. deletes) all submissions on the
- * current HN page matching an entry in the specified blacklist.
- * Returns a boolean indicating
- * whether or not at least one submission was filtered out.
- * @param {set} blacklist - A set containing the domains to filter out.
+ * Get the thing holding the list of submissions.
  */
-function filterSubmissions(blacklist) {
-  const submissionFilteredBySource = filterSubmissionsBySource(blacklist);
-  const submissionFilteredByTitle = filterSubmissionsByTitle(blacklist);
+function getSubmissionTable() {
+  return document.querySelectorAll('.athing')[0].parentElement;
+}
 
-  return submissionFilteredBySource || submissionFilteredByTitle;
+/**
+ * Get the list of submissions.
+ */
+function getSubmissions() {
+  return document.querySelectorAll('.athing');
 }
 
 /**
@@ -243,16 +237,17 @@ function filterSubmissionsBySource(blacklist) {
   for (let i = 0; i < submissions.length; i++) {
     const submissionInfo = getSubmissionInfo(submissions[i]);
 
-    if (submissionInfo.source === null) {
-      continue;
-    }
-
-    if (blacklist.has(submissionInfo.source)) {
+    if (submissionInfo.source !== null && blacklist.has(submissionInfo.source)) {
       logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
 
-      submissionTable.deleteRow(submissionInfo.rowIndex); // delete the submission
-      submissionTable.deleteRow(submissionInfo.rowIndex); // delete the submission comments link
-      submissionTable.deleteRow(submissionInfo.rowIndex); // delete the spacer row after the submission
+      // Delete the submission
+      submissionTable.deleteRow(submissionInfo.rowIndex);
+
+      // Delete the submission comments link
+      submissionTable.deleteRow(submissionInfo.rowIndex);
+
+      // Delete the spacer row after the submission
+      submissionTable.deleteRow(submissionInfo.rowIndex);
 
       somethingRemoved = true;
     }
@@ -288,9 +283,14 @@ function filterSubmissionsByTitle(blacklist) {
       if (submissionInfo.title.toLowerCase().includes(filter)) {
         logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
 
-        submissionTable.deleteRow(submissionInfo.rowIndex); // delete the submission
-        submissionTable.deleteRow(submissionInfo.rowIndex); // delete the submission comments link
-        submissionTable.deleteRow(submissionInfo.rowIndex); // delete the spacer row after the submission
+        // Delete the submission
+        submissionTable.deleteRow(submissionInfo.rowIndex);
+
+        // Delete the submission comments link
+        submissionTable.deleteRow(submissionInfo.rowIndex);
+
+        // Delete the spacer row after the submission
+        submissionTable.deleteRow(submissionInfo.rowIndex);
 
         somethingRemoved = true;
       }
@@ -301,23 +301,36 @@ function filterSubmissionsByTitle(blacklist) {
 }
 
 /**
+ * Filters out (i.e. deletes) all submissions on the
+ * current HN page matching an entry in the specified blacklist.
+ * Returns a boolean indicating
+ * whether or not at least one submission was filtered out.
+ * @param {set} blacklist - A set containing the domains to filter out.
+ */
+function filterSubmissions(blacklist) {
+  const submissionFilteredBySource = filterSubmissionsBySource(blacklist);
+  const submissionFilteredByTitle = filterSubmissionsByTitle(blacklist);
+
+  return submissionFilteredBySource || submissionFilteredByTitle;
+}
+
+/**
  * Updates the ranks of all of the remaining submissions on the current HN page.
  * This function is intended to be called after the submissions have been filtered.
  * This is because once the submissions are filtered, there is a gap in the rankings.
  * For example, if the 3rd submission is removed, the remaining submissions will have
  * ranks of: 1, 2, 4, 5, etc.
  * This function will correct the remaining submissions to have ranks of: 1, 2, 3, 4, etc.
- * This is accomplished by passing in the top rank on the current HN page _before_ any filtering is done.
- * For example, if the current HN page is the first one, the top rank will be "1",
- * and so numbering will start from 1. If the current page is the second one, the top rank will be "31".
+ * This is accomplished by passing in the top rank on the current HN page _before_
+ * any filtering is done. For example, if the current HN page is the first one,
+ * the top rank will be "1", and so numbering will start from 1. If the current page
+ * is the second one, the top rank will be "31".
  * @param {?number} topRank - Specifies the top rank to start numbering from.
  */
 function reindexSubmissions(topRank) {
   const submissions = document.querySelectorAll('.athing');
 
   for (let i = 0; i < submissions.length; i++) {
-    const submissionInfo = getSubmissionInfo(submissions[i]);
-
     setRank(submissions[i], topRank + i);
   }
 }
@@ -334,34 +347,26 @@ function getTopRank() {
   return topRank;
 }
 
-/**
- * Get the thing holding the list of submissions.
- */
-function getSubmissionTable() {
-  return document.querySelectorAll('.athing')[0].parentElement;
-}
+function main() {
+  // Add sources you don't want to see here.
+  const blacklist = new Set(
+    [
+    ],
+  );
 
-/**
- * Get the list of submissions.
- */
-function getSubmissions() {
-  return document.querySelectorAll('.athing');
-}
+  const topRank = getTopRank();
 
-/**
- * Logs an info message to the console.
- * @param {string} message - Specifies the message to log.
- */
-function logInfo(message) {
-  console.info(`${UserScriptName}: ${message}`);
-}
+  const somethingRemoved = filterSubmissions(blacklist);
 
-/**
- * Logs a warning message to the console.
- * @param {string} message - Specifies the message to log.
- */
-function logWarning(message) {
-  console.warn(`${UserScriptName}: ${message}`);
+  if (!somethingRemoved) {
+    logInfo('Nothing filtered');
+
+    return;
+  }
+
+  logInfo('Reindexing submissions');
+
+  reindexSubmissions(topRank);
 }
 
 main();
