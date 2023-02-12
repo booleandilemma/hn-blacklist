@@ -261,7 +261,7 @@ function getSubmissions() {
  * current HN page with a domain source contained in the specified blacklist.
  * Returns a boolean indicating
  * whether or not at least one submission was filtered out.
- * @param {set} blacklist - A set containing the domains to filter out.
+ * @param {set} blacklist - A set containing entries to filter out.
  */
 function filterSubmissionsBySource(blacklist) {
   const submissions = getSubmissions();
@@ -305,7 +305,7 @@ function filterSubmissionsBySource(blacklist) {
  * current HN page with a title substring contained in the specified blacklist.
  * Returns a boolean indicating
  * whether or not at least one submission was filtered out.
- * @param {set} blacklist - A set containing the title substrings to filter out.
+ * @param {set} blacklist - A set containing entries to filter out.
  */
 function filterSubmissionsByTitle(blacklist) {
   const submissions = getSubmissions();
@@ -348,7 +348,7 @@ function filterSubmissionsByTitle(blacklist) {
  * Filters out (i.e. deletes) all submissions on the
  * current HN page submitted by the specified user.
  * Returns a boolean indicating whether or not at least one submission was filtered out.
- * @param {set} blacklist - A set containing the title substrings to filter out.
+ * @param {set} blacklist - A set containing entries to filter out.
  */
 function filterSubmissionsByUser(blacklist) {
   const submissions = getSubmissions();
