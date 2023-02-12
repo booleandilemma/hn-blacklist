@@ -35,6 +35,8 @@ const blacklist = new Set(
 );
 ```
 
+All titles containing the string "ChatGPT" will be filtered out. This filtering is case-insensitive.
+
 ## Filtering by user
 
 If you want to filter out submissions by a certain user, prefix your blacklist entry with the string `user:`, followed by the username.
@@ -47,5 +49,3 @@ const blacklist = new Set(
     ]
 );
 ```
-
-All titles containing the string "ChatGPT" will be filtered out. This filtering is case-insensitive.
