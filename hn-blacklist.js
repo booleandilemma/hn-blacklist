@@ -189,6 +189,13 @@ function getSubmitter(submission) {
   }
 
   const { nextSibling } = submission;
+  if (nextSibling === null) {
+    // TODO: this might be a bug
+    logWarning('nextSibling is null');
+
+    return null;
+  }
+
   const userLink = nextSibling.querySelector('.hnuser');
 
   if (userLink == null) {
@@ -263,24 +270,32 @@ function filterSubmissionsBySource(blacklist) {
 
   let somethingRemoved = false;
 
-  for (let i = 0; i < submissions.length; i++) {
-    const submissionInfo = getSubmissionInfo(submissions[i]);
-
-    if (submissionInfo.source !== null && blacklist.has(submissionInfo.source)) {
-      logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
-
-      // Delete the submission
-      submissionTable.deleteRow(submissionInfo.rowIndex);
-
-      // Delete the submission comments link
-      submissionTable.deleteRow(submissionInfo.rowIndex);
-
-      // Delete the spacer row after the submission
-      submissionTable.deleteRow(submissionInfo.rowIndex);
-
-      somethingRemoved = true;
+  blacklist.forEach((entry) => {
+    if (!entry.startsWith('source:')) {
+      return;
     }
-  }
+
+    const filter = entry.substring(entry.indexOf('source:') + 'source:'.length).toLowerCase();
+
+    for (let i = 0; i < submissions.length; i++) {
+      const submissionInfo = getSubmissionInfo(submissions[i]);
+
+      if (submissionInfo.source !== null && submissionInfo.source === filter) {
+        logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
+
+        // Delete the submission
+        submissionTable.deleteRow(submissionInfo.rowIndex);
+
+        // Delete the submission comments link
+        submissionTable.deleteRow(submissionInfo.rowIndex);
+
+        // Delete the spacer row after the submission
+        submissionTable.deleteRow(submissionInfo.rowIndex);
+
+        somethingRemoved = true;
+      }
+    }
+  });
 
   return somethingRemoved;
 }
@@ -424,12 +439,25 @@ function getTopRank() {
   return topRank;
 }
 
+function warnAboutInvalidBlacklistEntries(blacklist) {
+  blacklist.forEach((entry) => {
+    if (!entry.startsWith('source:')
+    && !entry.startsWith('title:')
+    && !entry.startsWith('user:')) {
+      logWarning(`'${entry}' is an invalid entry and will be skipped. `
+      + 'Entries must begin with \'source:\', \'title:\', or \'user:\'.');
+    }
+  });
+}
+
 function main() {
   // Add sources you don't want to see here.
   const blacklist = new Set(
     [
     ],
   );
+
+  warnAboutInvalidBlacklistEntries(blacklist);
 
   const topRank = getTopRank();
 
