@@ -346,9 +346,8 @@ function filterSubmissionsByTitle(blacklist) {
 
 /**
  * Filters out (i.e. deletes) all submissions on the
- * current HN page with a title substring contained in the specified blacklist.
- * Returns a boolean indicating
- * whether or not at least one submission was filtered out.
+ * current HN page submitted by the specified user.
+ * Returns a boolean indicating whether or not at least one submission was filtered out.
  * @param {set} blacklist - A set containing the title substrings to filter out.
  */
 function filterSubmissionsByUser(blacklist) {
