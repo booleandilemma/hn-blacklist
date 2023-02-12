@@ -35,4 +35,17 @@ const blacklist = new Set(
 );
 ```
 
+## Filtering by user
+
+If you want to filter out submissions by a certain user, prepend the string `user:` followed by the username whose submissions you want to filter out:
+
+```
+// Add sources you don't want to see here.
+const blacklist = new Set(
+    [
+        'user:booleandilemma'
+    ]
+);
+```
+
 All titles containing the string "ChatGPT" will be filtered out. This filtering is case-insensitive.
