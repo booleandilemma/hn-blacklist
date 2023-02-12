@@ -11,6 +11,7 @@ module.exports = {
     rules: {
       'class-methods-use-this': 'off',
       'no-plusplus': 'off',
+      'no-console': 'off',
     }
   }
   ],
