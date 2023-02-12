@@ -8,30 +8,28 @@
 // @license      GPL-3.0-or-later
 // ==/UserScript==
 
-const UserScriptName = "HN Blacklist";
+const UserScriptName = 'HN Blacklist';
 
 function main() {
+  // Add sources you don't want to see here.
+  const blacklist = new Set(
+    [
+    ],
+  );
 
-    // Add sources you don't want to see here.
-    const blacklist = new Set(
-        [
-        ]
-    );
+  const topRank = getTopRank();
 
-    const topRank = getTopRank();
+  const somethingRemoved = filterSubmissions(blacklist);
 
-    const somethingRemoved = filterSubmissions(blacklist);
+  if (!somethingRemoved) {
+    logInfo('Nothing filtered');
 
-    if (!somethingRemoved) {
+    return;
+  }
 
-        logInfo("Nothing filtered");
+  logInfo('Reindexing submissions');
 
-        return;
-    }
-
-    logInfo('Reindexing submissions');
-
-    reindexSubmissions(topRank);
+  reindexSubmissions(topRank);
 }
 
 /**
@@ -40,41 +38,37 @@ function main() {
  * @param {?number} newRank - Specifies the new rank to set on the specified submission.
  */
 function setRank(submission, newRank) {
+  if (submission === null) {
+    logWarning('submission is null');
 
-    if (submission === null) {
-        logWarning("submission is null");
+    return null;
+  }
+
+  let titleIndex = 0;
+
+  for (let i = 0; i < submission.childNodes.length; i++) {
+    const childNode = submission.childNodes[i];
+
+    if (childNode.className == 'title') {
+      titleIndex++;
+    }
+
+    if (titleIndex === 1) {
+      const rank = childNode.innerText;
+
+      if (rank === null) {
+        logWarning('rank is null');
 
         return null;
+      }
+
+      childNode.innerText = `${newRank}.`;
+
+      return;
     }
+  }
 
-    let titleIndex = 0;
-
-    for (let i = 0; i < submission.childNodes.length; i++) {
-
-        const childNode = submission.childNodes[i];
-
-        if (childNode.className == "title") {
-
-            titleIndex++;
-        }
-
-        if (titleIndex === 1) {
-
-            let rank = childNode.innerText;
-
-            if (rank === null) {
-                logWarning("rank is null");
-
-                return null;
-            }
-
-            childNode.innerText = newRank + "."
-
-            return;
-        }
-    }
-
-    logWarning("no rank found: " + JSON.stringify(submission));
+  logWarning(`no rank found: ${JSON.stringify(submission)}`);
 }
 
 /**
@@ -82,24 +76,23 @@ function setRank(submission, newRank) {
  * @param {?object} titleInfo - An element containing the submission headline and source.
  */
 function getSource(titleInfo) {
+  if (titleInfo === null) {
+    logWarning('titleInfo is null');
 
-    if (titleInfo === null) {
-        logWarning("titleInfo is null");
+    return null;
+  }
 
-        return null;
-    }
+  const titleText = titleInfo.innerText;
 
-    let titleText = titleInfo.innerText;
+  const lastParenIndex = titleText.lastIndexOf('(');
 
-    let lastParenIndex = titleText.lastIndexOf("(");
+  if (lastParenIndex < 0) {
+    return null;
+  }
 
-    if (lastParenIndex < 0) {
-        return null;
-    }
+  const source = titleText.substring(lastParenIndex + 1, titleText.length - 1).trim();
 
-    let source = titleText.substring(lastParenIndex + 1, titleText.length - 1).trim();
-
-    return source;
+  return source;
 }
 
 /**
@@ -107,22 +100,21 @@ function getSource(titleInfo) {
  * @param {?object} titleInfo - An element containing the submission headline and source.
  */
 function getTitleText(titleInfo) {
+  if (titleInfo === null) {
+    logWarning('titleInfo is null');
 
-    if (titleInfo === null) {
-        logWarning("titleInfo is null");
+    return null;
+  }
 
-        return null;
-    }
+  const titleText = titleInfo.innerText;
 
-    const titleText = titleInfo.innerText;
+  const lastParenIndex = titleText.lastIndexOf('(');
 
-    const lastParenIndex = titleText.lastIndexOf("(");
+  if (lastParenIndex < 0) {
+    return titleText;
+  }
 
-    if (lastParenIndex < 0) {
-        return titleText;
-    }
-
-    return titleText.substring(0, lastParenIndex);
+  return titleText.substring(0, lastParenIndex);
 }
 
 /**
@@ -131,40 +123,36 @@ function getTitleText(titleInfo) {
  * @param {?object} submission - Specifies the HN submission.
  */
 function getRank(submission) {
-
-    if (submission === null) {
-        logWarning("submission is null");
-        return null;
-    }
-
-    let titleIndex = 0;
-
-    for (let i = 0; i < submission.childNodes.length; i++) {
-
-        const childNode = submission.childNodes[i];
-
-        if (childNode.className == "title") {
-
-            titleIndex++;
-        }
-
-        if (titleIndex === 1) {
-
-            let rank = childNode.innerText;
-
-            if (rank === null) {
-                logWarning("rank is null");
-
-                return null;
-            }
-
-            return parseInt(rank.replace(".", "").trim());
-        }
-    }
-
-    logWarning("no rank found: " + JSON.stringify(submission));
-
+  if (submission === null) {
+    logWarning('submission is null');
     return null;
+  }
+
+  let titleIndex = 0;
+
+  for (let i = 0; i < submission.childNodes.length; i++) {
+    const childNode = submission.childNodes[i];
+
+    if (childNode.className == 'title') {
+      titleIndex++;
+    }
+
+    if (titleIndex === 1) {
+      const rank = childNode.innerText;
+
+      if (rank === null) {
+        logWarning('rank is null');
+
+        return null;
+      }
+
+      return parseInt(rank.replace('.', '').trim());
+    }
+  }
+
+  logWarning(`no rank found: ${JSON.stringify(submission)}`);
+
+  return null;
 }
 
 /**
@@ -174,32 +162,29 @@ function getRank(submission) {
  * @param {?object} submission - Specifies the HN submission.
  */
 function getTitleInfo(submission) {
-
-    if (submission === null) {
-        logWarning("submission is null");
-
-        return null;
-    }
-
-    let titleIndex = 0;
-
-    for (let i = 0; i < submission.childNodes.length; i++) {
-
-        const childNode = submission.childNodes[i];
-
-        if (childNode.className == "title") {
-
-            titleIndex++;
-        }
-
-        if (titleIndex === 2) {
-            return childNode;
-        }
-    }
-
-    logWarning("no titleInfo found: " + JSON.stringify(submission));
+  if (submission === null) {
+    logWarning('submission is null');
 
     return null;
+  }
+
+  let titleIndex = 0;
+
+  for (let i = 0; i < submission.childNodes.length; i++) {
+    const childNode = submission.childNodes[i];
+
+    if (childNode.className == 'title') {
+      titleIndex++;
+    }
+
+    if (titleIndex === 2) {
+      return childNode;
+    }
+  }
+
+  logWarning(`no titleInfo found: ${JSON.stringify(submission)}`);
+
+  return null;
 }
 
 /**
@@ -208,24 +193,23 @@ function getTitleInfo(submission) {
  * @param {?object} submission - Specifies the HN submission.
  */
 function getSubmissionInfo(submission) {
+  if (submission === null) {
+    return null;
+  }
 
-    if (submission === null) {
-        return null;
-    }
+  const titleInfo = getTitleInfo(submission);
 
-    const titleInfo = getTitleInfo(submission);
+  const rank = getRank(submission);
+  const titleText = getTitleText(titleInfo);
+  const source = getSource(titleInfo);
+  const { rowIndex } = submission;
 
-    const rank = getRank(submission);
-    const titleText = getTitleText(titleInfo);
-    const source = getSource(titleInfo);
-    const rowIndex = submission.rowIndex;
-
-    return {
-        title: titleText,
-        source: source,
-        rank: rank,
-        rowIndex: rowIndex
-    };
+  return {
+    title: titleText,
+    source,
+    rank,
+    rowIndex,
+  };
 }
 
 /**
@@ -235,12 +219,11 @@ function getSubmissionInfo(submission) {
  * whether or not at least one submission was filtered out.
  * @param {set} blacklist - A set containing the domains to filter out.
  */
- function filterSubmissions(blacklist) {
+function filterSubmissions(blacklist) {
+  const submissionFilteredBySource = filterSubmissionsBySource(blacklist);
+  const submissionFilteredByTitle = filterSubmissionsByTitle(blacklist);
 
-    let submissionFilteredBySource = filterSubmissionsBySource(blacklist);
-    let submissionFilteredByTitle = filterSubmissionsByTitle(blacklist);
-
-    return submissionFilteredBySource || submissionFilteredByTitle;
+  return submissionFilteredBySource || submissionFilteredByTitle;
 }
 
 /**
@@ -251,33 +234,31 @@ function getSubmissionInfo(submission) {
  * @param {set} blacklist - A set containing the domains to filter out.
  */
 function filterSubmissionsBySource(blacklist) {
-    const submissions = getSubmissions();
+  const submissions = getSubmissions();
 
-    const submissionTable = getSubmissionTable();
+  const submissionTable = getSubmissionTable();
 
-    let somethingRemoved = false;
+  let somethingRemoved = false;
 
-    for (let i = 0; i < submissions.length; i++) {
+  for (let i = 0; i < submissions.length; i++) {
+    const submissionInfo = getSubmissionInfo(submissions[i]);
 
-        const submissionInfo = getSubmissionInfo(submissions[i]);
-
-        if (submissionInfo.source === null) {
-            continue;
-        }
-
-        if (blacklist.has(submissionInfo.source)) {
-
-            logInfo("Removing " + JSON.stringify(submissionInfo));
-
-            submissionTable.deleteRow(submissionInfo.rowIndex); //delete the submission
-            submissionTable.deleteRow(submissionInfo.rowIndex); //delete the submission comments link
-            submissionTable.deleteRow(submissionInfo.rowIndex); //delete the spacer row after the submission
-
-            somethingRemoved = true;
-        }
+    if (submissionInfo.source === null) {
+      continue;
     }
 
-    return somethingRemoved;
+    if (blacklist.has(submissionInfo.source)) {
+      logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
+
+      submissionTable.deleteRow(submissionInfo.rowIndex); // delete the submission
+      submissionTable.deleteRow(submissionInfo.rowIndex); // delete the submission comments link
+      submissionTable.deleteRow(submissionInfo.rowIndex); // delete the spacer row after the submission
+
+      somethingRemoved = true;
+    }
+  }
+
+  return somethingRemoved;
 }
 
 /**
@@ -288,38 +269,35 @@ function filterSubmissionsBySource(blacklist) {
  * @param {set} blacklist - A set containing the title substrings to filter out.
  */
 function filterSubmissionsByTitle(blacklist) {
-    const submissions = getSubmissions();
+  const submissions = getSubmissions();
 
-    const submissionTable = getSubmissionTable();
+  const submissionTable = getSubmissionTable();
 
-    let somethingRemoved = false;
+  let somethingRemoved = false;
 
-    blacklist.forEach(entry => {
+  blacklist.forEach((entry) => {
+    if (!entry.startsWith('title:')) {
+      return;
+    }
 
-        if(!entry.startsWith("title:")) {
-            return;
-        }
+    const filter = entry.substring(entry.indexOf('title:') + 'title:'.length).toLowerCase();
 
-        const filter = entry.substring(entry.indexOf("title:") + "title:".length).toLowerCase();
+    for (let j = 0; j < submissions.length; j++) {
+      const submissionInfo = getSubmissionInfo(submissions[j]);
 
-        for (let j = 0; j < submissions.length; j++) {
+      if (submissionInfo.title.toLowerCase().includes(filter)) {
+        logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
 
-            const submissionInfo = getSubmissionInfo(submissions[j]);
+        submissionTable.deleteRow(submissionInfo.rowIndex); // delete the submission
+        submissionTable.deleteRow(submissionInfo.rowIndex); // delete the submission comments link
+        submissionTable.deleteRow(submissionInfo.rowIndex); // delete the spacer row after the submission
 
-            if (submissionInfo.title.toLowerCase().includes(filter)) {
+        somethingRemoved = true;
+      }
+    }
+  });
 
-                logInfo("Removing " + JSON.stringify(submissionInfo));
-
-                submissionTable.deleteRow(submissionInfo.rowIndex); //delete the submission
-                submissionTable.deleteRow(submissionInfo.rowIndex); //delete the submission comments link
-                submissionTable.deleteRow(submissionInfo.rowIndex); //delete the spacer row after the submission
-
-                somethingRemoved = true;
-            }
-        }
-    });
-    
-    return somethingRemoved;
+  return somethingRemoved;
 }
 
 /**
@@ -335,14 +313,13 @@ function filterSubmissionsByTitle(blacklist) {
  * @param {?number} topRank - Specifies the top rank to start numbering from.
  */
 function reindexSubmissions(topRank) {
-    const submissions = document.querySelectorAll('.athing');
+  const submissions = document.querySelectorAll('.athing');
 
-    for (let i = 0; i < submissions.length; i++) {
+  for (let i = 0; i < submissions.length; i++) {
+    const submissionInfo = getSubmissionInfo(submissions[i]);
 
-        const submissionInfo = getSubmissionInfo(submissions[i]);
-
-        setRank(submissions[i], topRank + i);
-    }
+    setRank(submissions[i], topRank + i);
+  }
 }
 
 /**
@@ -350,25 +327,25 @@ function reindexSubmissions(topRank) {
  * and returns the rank of the first submission in the list.
  */
 function getTopRank() {
-    const submissions = document.querySelectorAll('.athing');
+  const submissions = document.querySelectorAll('.athing');
 
-    const topRank = getRank(submissions[0]);
+  const topRank = getRank(submissions[0]);
 
-    return topRank
+  return topRank;
 }
 
 /**
  * Get the thing holding the list of submissions.
  */
 function getSubmissionTable() {
-    return document.querySelectorAll('.athing')[0].parentElement;
+  return document.querySelectorAll('.athing')[0].parentElement;
 }
 
 /**
  * Get the list of submissions.
  */
 function getSubmissions() {
-    return document.querySelectorAll('.athing');
+  return document.querySelectorAll('.athing');
 }
 
 /**
@@ -376,7 +353,7 @@ function getSubmissions() {
  * @param {string} message - Specifies the message to log.
  */
 function logInfo(message) {
-    console.info(UserScriptName + ": " + message);
+  console.info(`${UserScriptName}: ${message}`);
 }
 
 /**
@@ -384,7 +361,7 @@ function logInfo(message) {
  * @param {string} message - Specifies the message to log.
  */
 function logWarning(message) {
-    console.warn(UserScriptName + ": " + message);
+  console.warn(`${UserScriptName}: ${message}`);
 }
 
 main();
