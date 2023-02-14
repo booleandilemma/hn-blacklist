@@ -3,7 +3,7 @@
 // @description  Hide Hacker News submissions from sources you don't want to see
 // @include      https://news.ycombinator.com/
 // @include      https://news.ycombinator.com/news*
-// @version      2.0.1
+// @version      2.0.2
 // @grant        none
 // @license      GPL-3.0
 // ==/UserScript==
