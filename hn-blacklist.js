@@ -21,9 +21,6 @@ class Entry {
 
     this.prefix = prefix;
     this.text = text;
-
-    console.log(this.prefix);
-    console.log(this.text);
   }
 }
 
