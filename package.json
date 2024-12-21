@@ -1,6 +1,6 @@
 {
   "name": "hn-blacklist",
-  "version": "1.2.1",
+  "version": "2.0.3",
   "description": "Hide Hacker News submissions from sources you don't want to see",
   "main": "hn-blacklist.js",
   "scripts": {
