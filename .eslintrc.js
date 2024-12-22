@@ -16,6 +16,7 @@ module.exports = {
         'quotes': 'off',
         'camelcase': 'off',
         'max-classes-per-file': 'off',
+        'strict': 'off',
       }
     }
   ],
