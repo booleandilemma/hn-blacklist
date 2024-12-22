@@ -3,8 +3,8 @@
 // @author       booleandilemma
 // @description  Hide Hacker News submissions from sources you don't want to see
 // @homepageURL  https://github.com/booleandilemma/hn-blacklist
-// @include      https://news.ycombinator.com/
-// @include      https://news.ycombinator.com/news*
+// @match        https://news.ycombinator.com/
+// @match        https://news.ycombinator.com/news*
 // @version      2.1.1
 // @grant        none
 // @license      GPL-3.0
