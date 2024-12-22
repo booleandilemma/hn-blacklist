@@ -19,8 +19,8 @@ Simply modify `hn-blacklist.js` - adding the domains of sites you don't want to 
 // Add sources you don't want to see here.
 const blacklist = new Set(
     [
-        'source:nautil.us',
-        'source:fs.blog'
+        "source:nautil.us",
+        "source:fs.blog"
     ]
 );
 ```
@@ -33,7 +33,7 @@ If you're tired of seeing articles mentioning "ChatGPT", for example, add the fo
 // Add sources you don't want to see here.
 const blacklist = new Set(
     [
-        'title:ChatGPT'
+        "title:ChatGPT"
     ]
 );
 ```
@@ -48,7 +48,7 @@ If you want to filter out submissions by a certain user, prefix your blacklist e
 // Add sources you don't want to see here.
 const blacklist = new Set(
     [
-        'user:booleandilemma'
+        "user:booleandilemma"
     ]
 );
 ```
