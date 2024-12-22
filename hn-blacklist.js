@@ -69,7 +69,7 @@ function logWarning(message) {
  * Logs an error message to the console.
  * @param {string} message - Specifies the message to log.
  */
-function logWarning(message) {
+function logError(message) {
   console.error(`${UserScriptName}: ${message}`);
 }
 
@@ -494,7 +494,7 @@ function warnAboutInvalidBlacklistEntries(blacklist) {
 
   blacklist.forEach((input) => {
     if (!isValidInput(input)) {
-      logWarning(`'${input}' is an invalid entry and will be skipped. `
+      logError(`'${input}' is an invalid entry and will be skipped. `
         + 'Entries must begin with \'source:\', \'title:\', or \'user:\'.');
 
       invalidEntriesExist = true;
