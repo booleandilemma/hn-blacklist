@@ -5,7 +5,7 @@
 // @homepageURL  https://github.com/booleandilemma/hn-blacklist
 // @include      https://news.ycombinator.com/
 // @include      https://news.ycombinator.com/news*
-// @version      2.0.3
+// @version      2.1.0
 // @grant        none
 // @license      GPL-3.0
 // ==/UserScript==
@@ -411,8 +411,8 @@ function filterSubmissions(blacklist) {
   const submissionFilteredByUser = filterSubmissionsByUser(blacklist);
 
   return submissionFilteredBySource
-         || submissionFilteredByTitle
-         || submissionFilteredByUser;
+    || submissionFilteredByTitle
+    || submissionFilteredByUser;
 }
 
 /**
@@ -450,8 +450,8 @@ function getTopRank() {
 
 function isValidInput(input) {
   if (input.startsWith('source:')
-  || input.startsWith('title:')
-  || input.startsWith('user:')) {
+    || input.startsWith('title:')
+    || input.startsWith('user:')) {
     return true;
   }
 
@@ -462,7 +462,7 @@ function warnAboutInvalidBlacklistEntries(blacklist) {
   blacklist.forEach((input) => {
     if (!isValidInput(input)) {
       logWarning(`'${input}' is an invalid entry and will be skipped. `
-      + 'Entries must begin with \'source:\', \'title:\', or \'user:\'.');
+        + 'Entries must begin with \'source:\', \'title:\', or \'user:\'.');
     }
   });
 }
@@ -481,7 +481,211 @@ function buildEntries(blacklist) {
   return entries;
 }
 
+function test_getSubmissions_numberOfSubmissionsIsCorrect() {
+  // Arrange
+  const testName = "test_getSubmissions_numberOfSubmissionsIsCorrect";
+  const results = [];
+
+  const expectedLength = 30;
+
+  // Act
+  const submissions = getSubmissions();
+
+  // Assert
+  const result = {
+    name: testName,
+    status: "passed",
+  };
+
+  if (submissions.length !== 30) {
+    result.status = "failed";
+    result.message = `Submissions length is wrong. expected ${expectedLength}, got ${submissions.length}`;
+  }
+
+  results.push(result);
+
+  return results;
+}
+
+function test_getRank_ableToGetRank() {
+  // Arrange
+  const testName = "test_getRank_ableToGetRank";
+  const results = [];
+
+  const submissions = getSubmissions();
+  const result = {
+    name: testName,
+    status: "passed",
+  };
+
+  // Arbitrarily testing the 5th submission.
+  if (submissions.length < 5) {
+    result.status = "failed";
+    result.message = "Submissions length less than 5, can't get a rank";
+    results.push(result);
+
+    return results;
+  }
+
+  // Act
+  const rank = getRank(submissions[4]);
+
+  // Assert
+  if (rank !== 5) {
+    result.status = "failed";
+    result.message = "Unable to obtain submission rank";
+  }
+
+  results.push(result);
+
+  return results;
+}
+
+function test_getSubmitter_ableToGetSubmitter() {
+  // Arrange
+  const testName = "test_getSubmitter_ableToGetSubmitter";
+  const results = [];
+
+  const submissions = getSubmissions();
+  const result = {
+    name: testName,
+    status: "passed",
+  };
+
+  // Arbitrarily testing the 5th submission.
+  if (submissions.length < 5) {
+    result.status = "failed";
+    result.message = "Submissions length less than 5, can't get a rank";
+    results.push(result);
+
+    return results;
+  }
+
+  // Act
+  const submitter = getSubmitter(submissions[4]);
+
+  // Assert
+  if (submitter == null || submitter.trim() === "") {
+    result.status = "failed";
+    result.message = "Couldn't get submitter";
+  }
+
+  results.push(result);
+
+  return results;
+}
+
+function test_getTitleInfo_ableToGetTitleInfo() {
+  // Arrange
+  const testName = "test_getTitleInfo_ableToGetTitleInfo";
+  const results = [];
+
+  const submissions = getSubmissions();
+  const result = {
+    name: testName,
+    status: "passed",
+  };
+
+  // Arbitrarily testing the 5th submission.
+  if (submissions.length < 5) {
+    result.status = "failed";
+    result.message = "Submissions length less than 5, can't get a rank";
+    results.push(result);
+
+    return results;
+  }
+
+  // Act
+  const titleInfo = getTitleInfo(submissions[4]);
+
+  // Assert
+  if (titleInfo == null) {
+    result.status = "failed";
+    result.message = "Couldn't get title info";
+  }
+
+  results.push(result);
+
+  return results;
+}
+
+function test_getTitleText_ableToGetTitleText() {
+  // Arrange
+  const testName = "test_getTitleText_ableToGetTitleText";
+  const results = [];
+
+  const submissions = getSubmissions();
+  const result = {
+    name: testName,
+    status: "passed",
+  };
+
+  // Arbitrarily testing the 5th submission.
+  if (submissions.length < 5) {
+    result.status = "failed";
+    result.message = "Submissions length less than 5, can't get a rank";
+    results.push(result);
+
+    return results;
+  }
+
+  const titleInfo = getTitleInfo(submissions[4]);
+
+  if (titleInfo == null) {
+    result.status = "failed";
+    result.message = "Couldn't get title info";
+    return result;
+  }
+
+  // Act
+  const titleText = getTitleText(titleInfo);
+
+  // Assert
+  if (titleText == null || titleText.trim() === "") {
+    result.status = "failed";
+    result.message = "Unable to get title text on title info";
+  }
+
+  results.push(result);
+
+  return results;
+}
+
+function runTests() {
+  let results = [];
+
+  results = results.concat(test_getSubmissions_numberOfSubmissionsIsCorrect());
+  results = results.concat(test_getRank_ableToGetRank());
+  results = results.concat(test_getSubmitter_ableToGetSubmitter());
+  results = results.concat(test_getTitleInfo_ableToGetTitleInfo());
+  results = results.concat(test_getTitleText_ableToGetTitleText());
+
+  let overallResult = true;
+  let failCount = 0;
+
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].status === "failed") {
+      overallResult = false;
+      failCount++;
+    }
+  }
+
+  const testCount = results.length;
+
+  if (overallResult) {
+    logInfo(`Tests Results ${testCount}/${testCount} Passed`);
+  } else {
+    logInfo(`Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)}`);
+  }
+}
+
 function main() {
+  /*
+   * Uncomment to run tests.
+   * If one or more tests fail, it's a good sign that the rest of the script won't work as intended.
+   */
+  // runTests();
+
   /*
    * Add sources you don't want to see here.
    *
@@ -492,7 +696,7 @@ function main() {
    * 3) 'user:' will filter the submission by the user who submitted it.
    *
    * For example, 'source:example.com' will filter all submissions coming from 'example.com'.
-  */
+   */
   const blacklist = new Set(
     [
     ],
