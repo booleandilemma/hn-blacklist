@@ -5,7 +5,7 @@
 // @homepageURL  https://github.com/booleandilemma/hn-blacklist
 // @include      https://news.ycombinator.com/
 // @include      https://news.ycombinator.com/news*
-// @version      2.1.0
+// @version      2.1.1
 // @grant        none
 // @license      GPL-3.0
 // ==/UserScript==
@@ -149,9 +149,9 @@ function getTitleText(titleInfo) {
 }
 
 /**
- * Returns the "rank" of an HN submission. The rank is defined as the
- * number to the far left of the submission.
  * @param {?object} submission - Specifies the HN submission.
+ * @returns {?number} The "rank" of an HN submission.
+ * The rank is defined as the number to the far left of the submission.
  */
 function getRank(submission) {
   if (submission === null) {
@@ -549,10 +549,32 @@ function test_getRank_ableToGetRank() {
   }
 
   // Act
-  const rank = getRank(submissions[4]);
+  const firstRankOnPage = getRank(submissions[0]);
 
   // Assert
-  if (rank !== 5) {
+  if (firstRankOnPage == null) {
+    result.status = "failed";
+    result.message = "First submission rank is null";
+    results.push(result);
+
+    return results;
+  }
+
+  const fifthRank = getRank(submissions[4]);
+
+  if (fifthRank == null) {
+    result.status = "failed";
+    result.message = "Fifth submission rank is null";
+    results.push(result);
+
+    return results;
+  }
+
+  /*
+   * We offset the rank like this so that this test will work
+   * on any submissions page.
+   */
+  if (fifthRank !== (firstRankOnPage + 4)) {
     result.status = "failed";
     result.message = "Unable to obtain submission rank";
   }
