@@ -744,7 +744,7 @@ function runTests() {
   return testResults;
 }
 
-function displayResults(filterResults, testResults, invalidEntriesExist) {
+function displayResults(blacklist, filterResults, testResults, invalidEntriesExist) {
   const hnblacklistTable = document.getElementById("hnblacklist");
 
   if (hnblacklistTable !== null) {
@@ -769,7 +769,15 @@ function displayResults(filterResults, testResults, invalidEntriesExist) {
   const tbody = mainTable.childNodes[childCount - 1];
 
   const statsRow = document.createElement("tr");
-  statsRow.id = "hnBlacklistTr";
+
+  let entryValidityMessage = "";
+
+  if (blacklist.size > 0) {
+    entryValidityMessage = invalidEntriesExist ? "One or more of your entries is invalid. Check the log for details" : "All entries valid";
+  } else {
+    entryValidityMessage = "No entries supplied";
+  }
+
   const stats = `
   <td>
     <table id="hnblacklist">
@@ -789,7 +797,7 @@ function displayResults(filterResults, testResults, invalidEntriesExist) {
           </td>
         </tr>
         <tr>
-          <td>Entry Validity: ${invalidEntriesExist ? "One or more of your entries is invalid. Check the log for details." : "All entries valid"}</td>
+          <td>Entry Validity: ${entryValidityMessage}.</td>
         </tr>
         <tr>
           <td>Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed</td>
@@ -797,6 +805,7 @@ function displayResults(filterResults, testResults, invalidEntriesExist) {
       </tbody>
       </table>
     </td>`;
+
   statsRow.innerHTML = stats;
   tbody.appendChild(statsRow);
 }
@@ -843,7 +852,7 @@ function main() {
    * Here we display the summary of what we've filtered at the bottom of the page.
    * Commenting this out won't affect the rest of the functionality of the script.
    */
-  displayResults(filterResults, testResults, invalidEntriesExist);
+  displayResults(blacklist, filterResults, testResults, invalidEntriesExist);
 }
 
 main();
