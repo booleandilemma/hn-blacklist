@@ -66,6 +66,14 @@ function logWarning(message) {
 }
 
 /**
+ * Logs an error message to the console.
+ * @param {string} message - Specifies the message to log.
+ */
+function logWarning(message) {
+  console.error(`${UserScriptName}: ${message}`);
+}
+
+/**
  * Updates the specified submission to the specified rank.
  * @param {?object} submission - Specifies the HN submission.
  * @param {?number} newRank - Specifies the new rank to set on the specified submission.
@@ -482,12 +490,18 @@ function isValidInput(input) {
 }
 
 function warnAboutInvalidBlacklistEntries(blacklist) {
+  let invalidEntriesExist = false;
+
   blacklist.forEach((input) => {
     if (!isValidInput(input)) {
       logWarning(`'${input}' is an invalid entry and will be skipped. `
         + 'Entries must begin with \'source:\', \'title:\', or \'user:\'.');
+
+      invalidEntriesExist = true;
     }
   });
+
+  return invalidEntriesExist;
 }
 
 function buildEntries(blacklist) {
@@ -730,7 +744,7 @@ function runTests() {
   return testResults;
 }
 
-function displayResults(filterResults, testResults) {
+function displayResults(filterResults, testResults, invalidEntriesExist) {
   const hnblacklistTable = document.getElementById("hnblacklist");
 
   if (hnblacklistTable !== null) {
@@ -775,6 +789,9 @@ function displayResults(filterResults, testResults) {
           </td>
         </tr>
         <tr>
+          <td>Entry Validity: ${invalidEntriesExist ? "One or more of your entries is invalid. Check the log for details." : "All entries valid"}</td>
+        </tr>
+        <tr>
           <td>Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed</td>
         </tr>
       </tbody>
@@ -806,7 +823,7 @@ function main() {
     ],
   );
 
-  warnAboutInvalidBlacklistEntries(blacklist);
+  const invalidEntriesExist = warnAboutInvalidBlacklistEntries(blacklist);
 
   const blacklistEntries = buildEntries(blacklist);
 
@@ -826,7 +843,7 @@ function main() {
    * Here we display the summary of what we've filtered at the bottom of the page.
    * Commenting this out won't affect the rest of the functionality of the script.
    */
-  displayResults(filterResults, testResults);
+  displayResults(filterResults, testResults, invalidEntriesExist);
 }
 
 main();
