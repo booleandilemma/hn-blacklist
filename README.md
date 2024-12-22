@@ -1,3 +1,6 @@
+![Greasy Fork Version](https://img.shields.io/greasyfork/v/427213-hn-blacklist)
+![Greasy Fork Downloads](https://img.shields.io/greasyfork/dt/427213-hn-blacklist)
+
 # HN Blacklist
 
 Tired of seeing articles from certain sources on Hacker News?
