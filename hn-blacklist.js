@@ -441,7 +441,7 @@ function filterSubmissions(blacklist) {
  * any filtering is done. For example, if the current HN page is the first one,
  * the top rank will be "1", and so numbering will start from 1. If the current page
  * is the second one, the top rank will be "31".
- * @param {?number} topRank - Specifies the top rank to start numbering from.
+ * @param {number} topRank - Specifies the top rank to start numbering from.
  */
 function reindexSubmissions(topRank) {
   const submissions = document.querySelectorAll('.athing');
@@ -675,31 +675,94 @@ function runTests() {
   results = results.concat(test_getTitleInfo_ableToGetTitleInfo());
   results = results.concat(test_getTitleText_ableToGetTitleText());
 
-  let overallResult = true;
+  let allTestsPass = true;
   let failCount = 0;
 
   for (let i = 0; i < results.length; i++) {
     if (results[i].status === "failed") {
-      overallResult = false;
+      allTestsPass = false;
       failCount++;
     }
   }
 
   const testCount = results.length;
 
-  if (overallResult) {
+  if (allTestsPass) {
     logInfo(`Tests Results ${testCount}/${testCount} Passed`);
   } else {
     logInfo(`Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)}`);
   }
+
+  return results;
+}
+
+function displayResults(filterResults, testResults) {
+  const hnblacklistTable = document.getElementById("hnblacklist");
+
+  if (hnblacklistTable !== null) {
+    /*
+     * We already displayed the results, so just return.
+     * This check is necessary because when using the 
+     * browser back button when coming from another HN page, 
+     * there's a chance we'll double-add the results table.
+     */
+    return;
+  }
+
+  const testCount = testResults.length;
+  let allTestsPass = true;
+  let failCount = 0;
+
+  for (let i = 0; i < testResults.length; i++) {
+    if (testResults[i].status === "failed") {
+      allTestsPass = false;
+      failCount++;
+    }
+  }
+  
+
+  const mainTable = document.getElementById("hnmain");
+
+  /*
+   * HN adds an extra child to the mainTable, 
+   * so we have to do this to get the tbody.
+   * I'm not sure why HN does this.
+   * This assumes the tbody will be the last child.
+   */
+  const childCount = mainTable.childNodes.length;
+  const tbody = mainTable.childNodes[childCount - 1];
+
+  const statsRow = document.createElement("tr");
+  statsRow.id = "hnBlacklistTr";
+  const stats = `
+  <td>
+    <table id="hnblacklist">
+      <tbody>
+        <tr><td><p>HN Blacklist Results:</p></td></tr>
+        <tr>
+          <td><p>Filtered by Source: ${filterResults.submissionsFilteredBySource}</p></td>
+        </tr>
+        <tr>
+          <td>Filtered by Title: ${filterResults.submissionsFilteredByTitle}</td>
+        </tr>
+        <tr>
+          <td>Filtered by User: ${filterResults.submissionsFilteredByUser}</td>
+        </tr>
+        <tr>
+          <td>Test Results ${testCount - failCount}/${testCount} Passed</td>
+        </tr>
+      </tbody>
+      </table>
+    </td>`;
+  statsRow.innerHTML = stats;
+  tbody.appendChild(statsRow);
 }
 
 function main() {
   /*
-   * Uncomment to run tests.
    * If one or more tests fail, it's a good sign that the rest of the script won't work as intended.
    */
-  // runTests();
+  const testResults = runTests();
 
   /*
    * Add sources you don't want to see here.
@@ -725,15 +788,20 @@ function main() {
 
   const filterResults = filterSubmissions(blacklistEntries);
 
-  if (filterResults.getTotalSubmissionsFilteredOut() === 0) {
-    logInfo('Nothing filtered');
+  if (filterResults.getTotalSubmissionsFilteredOut() > 0) {
 
-    return;
+    logInfo('Reindexing submissions');
+
+    reindexSubmissions(topRank);
+  } else {
+    logInfo('Nothing filtered');
   }
 
-  logInfo('Reindexing submissions');
-
-  reindexSubmissions(topRank);
+  /*
+   * Here we display the summary of what we've filtered at the bottom of the page.
+   * Commenting this out won't affect the rest of the functionality of the script.
+   */
+  displayResults(filterResults, testResults);
 }
 
 main();
