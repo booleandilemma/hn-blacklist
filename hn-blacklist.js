@@ -737,18 +737,22 @@ function displayResults(filterResults, testResults) {
   <td>
     <table id="hnblacklist">
       <tbody>
-        <tr><td><p>HN Blacklist Results:</p></td></tr>
         <tr>
-          <td><p>Filtered by Source: ${filterResults.submissionsFilteredBySource}</p></td>
+          <td>
+            <p>HN Blacklist:</p>
+          </td>
         </tr>
         <tr>
-          <td>Filtered by Title: ${filterResults.submissionsFilteredByTitle}</td>
+          <td>
+            <p>Filtered: 
+              ${filterResults.submissionsFilteredBySource} by source, 
+              ${filterResults.submissionsFilteredByTitle} by title, 
+              ${filterResults.submissionsFilteredByUser} by user.
+            </p>
+          </td>
         </tr>
         <tr>
-          <td>Filtered by User: ${filterResults.submissionsFilteredByUser}</td>
-        </tr>
-        <tr>
-          <td>Test Results ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed</td>
+          <td>Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed</td>
         </tr>
       </tbody>
       </table>
