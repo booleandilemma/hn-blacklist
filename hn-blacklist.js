@@ -325,7 +325,7 @@ function filterSubmissionsBySource(blacklistEntries) {
       const submissionInfo = getSubmissionInfo(submissions[i]);
 
       if (submissionInfo.source !== null && submissionInfo.source === entry.text.toLowerCase()) {
-        logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
+        logInfo(`Source blacklisted - removing ${JSON.stringify(submissionInfo)}`);
 
         // Delete the submission
         submissionTable.deleteRow(submissionInfo.rowIndex);
@@ -366,7 +366,7 @@ function filterSubmissionsByTitle(blacklistEntries) {
       const submissionInfo = getSubmissionInfo(submissions[j]);
 
       if (submissionInfo.title.toLowerCase().includes(entry.text.toLowerCase())) {
-        logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
+        logInfo(`Title keyword blacklisted - removing ${JSON.stringify(submissionInfo)}`);
 
         // Delete the submission
         submissionTable.deleteRow(submissionInfo.rowIndex);
@@ -408,7 +408,7 @@ function filterSubmissionsByUser(blacklistEntries) {
 
       if (submissionInfo.submitter !== null
         && submissionInfo.submitter.toLowerCase().includes(entry.text.toLowerCase())) {
-        logInfo(`Removing ${JSON.stringify(submissionInfo)}`);
+        logInfo(`User blacklisted - removing ${JSON.stringify(submissionInfo)}`);
 
         // Delete the submission
         submissionTable.deleteRow(submissionInfo.rowIndex);
