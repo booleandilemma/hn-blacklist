@@ -10,9 +10,9 @@
 // @license      GPL-3.0
 // ==/UserScript==
 
-'use strict';
+"use strict";
 
-const UserScriptName = 'HN Blacklist';
+const UserScriptName = "HN Blacklist";
 
 class Entry {
   constructor(prefixedInput) {
@@ -20,8 +20,8 @@ class Entry {
   }
 
   buildEntry(prefixedInput) {
-    const prefix = prefixedInput.substring(0, prefixedInput.indexOf(':'));
-    const text = prefixedInput.substring(prefixedInput.indexOf(':') + 1);
+    const prefix = prefixedInput.substring(0, prefixedInput.indexOf(":"));
+    const text = prefixedInput.substring(prefixedInput.indexOf(":") + 1);
 
     this.prefix = prefix;
     this.text = text;
@@ -80,7 +80,7 @@ function logError(message) {
  */
 function setRank(submission, newRank) {
   if (submission === null) {
-    logWarning('submission is null');
+    logWarning("submission is null");
 
     return;
   }
@@ -90,7 +90,7 @@ function setRank(submission, newRank) {
   for (let i = 0; i < submission.childNodes.length; i++) {
     const childNode = submission.childNodes[i];
 
-    if (childNode.className === 'title') {
+    if (childNode.className === "title") {
       titleIndex++;
     }
 
@@ -98,7 +98,7 @@ function setRank(submission, newRank) {
       const rank = childNode.innerText;
 
       if (rank === null) {
-        logWarning('rank is null');
+        logWarning("rank is null");
 
         return;
       }
@@ -118,14 +118,14 @@ function setRank(submission, newRank) {
  */
 function getSource(titleInfo) {
   if (titleInfo === null) {
-    logWarning('titleInfo is null');
+    logWarning("titleInfo is null");
 
     return null;
   }
 
   const titleText = titleInfo.innerText;
 
-  const lastParenIndex = titleText.lastIndexOf('(');
+  const lastParenIndex = titleText.lastIndexOf("(");
 
   if (lastParenIndex < 0) {
     return null;
@@ -142,14 +142,14 @@ function getSource(titleInfo) {
  */
 function getTitleText(titleInfo) {
   if (titleInfo === null) {
-    logWarning('titleInfo is null');
+    logWarning("titleInfo is null");
 
     return null;
   }
 
   const titleText = titleInfo.innerText;
 
-  const lastParenIndex = titleText.lastIndexOf('(');
+  const lastParenIndex = titleText.lastIndexOf("(");
 
   if (lastParenIndex < 0) {
     return titleText;
@@ -165,7 +165,7 @@ function getTitleText(titleInfo) {
  */
 function getRank(submission) {
   if (submission === null) {
-    logWarning('submission is null');
+    logWarning("submission is null");
     return null;
   }
 
@@ -174,7 +174,7 @@ function getRank(submission) {
   for (let i = 0; i < submission.childNodes.length; i++) {
     const childNode = submission.childNodes[i];
 
-    if (childNode.className === 'title') {
+    if (childNode.className === "title") {
       titleIndex++;
     }
 
@@ -182,12 +182,12 @@ function getRank(submission) {
       const rank = childNode.innerText;
 
       if (rank === null) {
-        logWarning('rank is null');
+        logWarning("rank is null");
 
         return null;
       }
 
-      return parseInt(rank.replace('.', '').trim(), 10);
+      return parseInt(rank.replace(".", "").trim(), 10);
     }
   }
 
@@ -204,7 +204,7 @@ function getRank(submission) {
  */
 function getTitleInfo(submission) {
   if (submission === null) {
-    logWarning('submission is null');
+    logWarning("submission is null");
 
     return null;
   }
@@ -214,7 +214,7 @@ function getTitleInfo(submission) {
   for (let i = 0; i < submission.childNodes.length; i++) {
     const childNode = submission.childNodes[i];
 
-    if (childNode.className === 'title') {
+    if (childNode.className === "title") {
       titleIndex++;
     }
 
@@ -230,7 +230,7 @@ function getTitleInfo(submission) {
 
 function getSubmitter(submission) {
   if (submission === null) {
-    logWarning('submission is null');
+    logWarning("submission is null");
 
     return null;
   }
@@ -238,28 +238,28 @@ function getSubmitter(submission) {
   const { nextSibling } = submission;
   if (nextSibling === null) {
     // TODO: this might be a bug
-    logWarning('nextSibling is null');
+    logWarning("nextSibling is null");
 
     return null;
   }
 
-  const userLink = nextSibling.querySelector('.hnuser');
+  const userLink = nextSibling.querySelector(".hnuser");
 
   if (userLink == null) {
-    logWarning('userLink is null');
+    logWarning("userLink is null");
 
     return null;
   }
 
-  const hrefUser = userLink.getAttribute('href');
+  const hrefUser = userLink.getAttribute("href");
 
   if (hrefUser == null) {
-    logWarning('hrefUser is null');
+    logWarning("hrefUser is null");
 
     return null;
   }
 
-  return hrefUser.replace('user?id=', '');
+  return hrefUser.replace("user?id=", "");
 }
 
 /**
@@ -293,14 +293,14 @@ function getSubmissionInfo(submission) {
  * Get the thing holding the list of submissions.
  */
 function getSubmissionTable() {
-  return document.querySelectorAll('.athing')[0].parentElement;
+  return document.querySelectorAll(".athing")[0].parentElement;
 }
 
 /**
  * Get the list of submissions.
  */
 function getSubmissions() {
-  return document.querySelectorAll('.athing');
+  return document.querySelectorAll(".athing");
 }
 
 /**
@@ -317,7 +317,7 @@ function filterSubmissionsBySource(blacklistEntries) {
   let submissionsFiltered = 0;
 
   blacklistEntries.forEach((entry) => {
-    if (entry.prefix !== 'source') {
+    if (entry.prefix !== "source") {
       return;
     }
 
@@ -358,7 +358,7 @@ function filterSubmissionsByTitle(blacklistEntries) {
   let submissionsFiltered = 0;
 
   blacklistEntries.forEach((entry) => {
-    if (entry.prefix !== 'title') {
+    if (entry.prefix !== "title") {
       return;
     }
 
@@ -399,7 +399,7 @@ function filterSubmissionsByUser(blacklistEntries) {
   let submissionsFiltered = 0;
 
   blacklistEntries.forEach((entry) => {
-    if (entry.prefix !== 'user') {
+    if (entry.prefix !== "user") {
       return;
     }
 
@@ -460,7 +460,7 @@ function filterSubmissions(blacklist) {
  * @param {number} topRank - Specifies the top rank to start numbering from.
  */
 function reindexSubmissions(topRank) {
-  const submissions = document.querySelectorAll('.athing');
+  const submissions = document.querySelectorAll(".athing");
 
   for (let i = 0; i < submissions.length; i++) {
     setRank(submissions[i], topRank + i);
@@ -472,7 +472,7 @@ function reindexSubmissions(topRank) {
  * and returns the rank of the first submission in the list.
  */
 function getTopRank() {
-  const submissions = document.querySelectorAll('.athing');
+  const submissions = document.querySelectorAll(".athing");
 
   const topRank = getRank(submissions[0]);
 
@@ -480,9 +480,9 @@ function getTopRank() {
 }
 
 function isValidInput(input) {
-  if (input.startsWith('source:')
-    || input.startsWith('title:')
-    || input.startsWith('user:')) {
+  if (input.startsWith("source:")
+    || input.startsWith("title:")
+    || input.startsWith("user:")) {
     return true;
   }
 
@@ -494,8 +494,8 @@ function warnAboutInvalidBlacklistEntries(blacklist) {
 
   blacklist.forEach((input) => {
     if (!isValidInput(input)) {
-      logError(`'${input}' is an invalid entry and will be skipped. `
-        + 'Entries must begin with \'source:\', \'title:\', or \'user:\'.');
+      logError(`"${input}" is an invalid entry and will be skipped. `
+        + `Entries must begin with "source:", "title:", or "user:".`);
 
       invalidEntriesExist = true;
     }
@@ -812,11 +812,11 @@ function main() {
    *
    * Three types of sources can be filtered on:
    *
-   * 1) 'source:' will filter the submission by the domain it comes from.
-   * 2) 'title:' will filter the submission by the words contained in the title.
-   * 3) 'user:' will filter the submission by the user who submitted it.
+   * 1) "source:" will filter the submission by the domain it comes from.
+   * 2) "title:" will filter the submission by the words contained in the title.
+   * 3) "user:" will filter the submission by the user who submitted it.
    *
-   * For example, 'source:example.com' will filter all submissions coming from 'example.com'.
+   * For example, "source:example.com" will filter all submissions coming from "example.com".
    */
   const blacklist = new Set(
     [
@@ -832,11 +832,11 @@ function main() {
   const filterResults = filterSubmissions(blacklistEntries);
 
   if (filterResults.getTotalSubmissionsFilteredOut() > 0) {
-    logInfo('Reindexing submissions');
+    logInfo("Reindexing submissions");
 
     reindexSubmissions(topRank);
   } else {
-    logInfo('Nothing filtered');
+    logInfo("Nothing filtered");
   }
 
   /*
