@@ -495,7 +495,7 @@ function warnAboutInvalidBlacklistEntries(blacklist) {
   blacklist.forEach((input) => {
     if (!isValidInput(input)) {
       logError(`"${input}" is an invalid entry and will be skipped. `
-        + "Entries must begin with \"source:\", \"title:\", or \"user:\".");
+        + `Entries must begin with "source:", "title:", or "user:".`);
 
       invalidEntriesExist = true;
     }
