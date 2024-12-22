@@ -34,10 +34,9 @@ class FilterResults {
   }
 
   getTotalSubmissionsFilteredOut() {
-
-    return this.submissionsFilteredBySource +
-      this.submissionsFilteredByTitle +
-      this.submissionsFilteredByUser;
+    return this.submissionsFilteredBySource
+      + this.submissionsFilteredByTitle
+      + this.submissionsFilteredByUser;
   }
 }
 
@@ -713,8 +712,8 @@ function displayResults(filterResults, testResults) {
   if (hnblacklistTable !== null) {
     /*
      * We already displayed the results, so just return.
-     * This check is necessary because when using the 
-     * browser back button when coming from another HN page, 
+     * This check is necessary because when using the
+     * browser back button when coming from another HN page,
      * there's a chance we'll double-add the results table.
      */
     return;
@@ -723,7 +722,7 @@ function displayResults(filterResults, testResults) {
   const mainTable = document.getElementById("hnmain");
 
   /*
-   * HN adds an extra child to the mainTable, 
+   * HN adds an extra child to the mainTable,
    * so we have to do this to get the tbody.
    * I'm not sure why HN does this.
    * This assumes the tbody will be the last child.
@@ -792,7 +791,6 @@ function main() {
   const filterResults = filterSubmissions(blacklistEntries);
 
   if (filterResults.getTotalSubmissionsFilteredOut() > 0) {
-
     logInfo('Reindexing submissions');
 
     reindexSubmissions(topRank);

@@ -15,6 +15,7 @@ module.exports = {
         'linebreak-style': 'off',
         'quotes': 'off',
         'camelcase': 'off',
+        'max-classes-per-file': 'off',
       }
     }
   ],
