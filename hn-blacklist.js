@@ -26,6 +26,21 @@ class Entry {
   }
 }
 
+class FilterResults {
+  constructor() {
+    this.submissionsFilteredBySource = null;
+    this.submissionsFilteredByTitle = null;
+    this.submissionsFilteredByUser = null;
+  }
+
+  getTotalSubmissionsFilteredOut() {
+
+    return this.submissionsFilteredBySource +
+      this.submissionsFilteredByTitle +
+      this.submissionsFilteredByUser;
+  }
+}
+
 /**
  * Logs an info message to the console.
  * @param {string} message - Specifies the message to log.
@@ -275,16 +290,15 @@ function getSubmissions() {
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page with a domain source contained in the specified blacklist.
- * Returns a boolean indicating
- * whether or not at least one submission was filtered out.
  * @param {set} blacklistEntries - A list containing entries to filter on.
+ * @returns {number} A number indicating how many submissions were filtered out.
  */
 function filterSubmissionsBySource(blacklistEntries) {
   const submissions = getSubmissions();
 
   const submissionTable = getSubmissionTable();
 
-  let somethingRemoved = false;
+  let submissionsFiltered = 0;
 
   blacklistEntries.forEach((entry) => {
     if (entry.prefix !== 'source') {
@@ -306,27 +320,26 @@ function filterSubmissionsBySource(blacklistEntries) {
         // Delete the spacer row after the submission
         submissionTable.deleteRow(submissionInfo.rowIndex);
 
-        somethingRemoved = true;
+        submissionsFiltered++;
       }
     }
   });
 
-  return somethingRemoved;
+  return submissionsFiltered;
 }
 
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page with a title substring contained in the specified blacklist.
- * Returns a boolean indicating
- * whether or not at least one submission was filtered out.
  * @param {set} blacklistEntries - A list containing entries to filter on.
+ * @returns {number} A number indicating how many submissions were filtered out.
  */
 function filterSubmissionsByTitle(blacklistEntries) {
   const submissions = getSubmissions();
 
   const submissionTable = getSubmissionTable();
 
-  let somethingRemoved = false;
+  let submissionsFiltered = 0;
 
   blacklistEntries.forEach((entry) => {
     if (entry.prefix !== 'title') {
@@ -348,26 +361,26 @@ function filterSubmissionsByTitle(blacklistEntries) {
         // Delete the spacer row after the submission
         submissionTable.deleteRow(submissionInfo.rowIndex);
 
-        somethingRemoved = true;
+        submissionsFiltered++;
       }
     }
   });
 
-  return somethingRemoved;
+  return submissionsFiltered;
 }
 
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page submitted by the specified user.
- * Returns a boolean indicating whether or not at least one submission was filtered out.
- * @param {set} blacklistEntries - A list containing entries to filter on.
+ * @param {set} blacklistEntries A list containing entries to filter on.
+ * @returns {number} A number indicating how many submissions were filtered out.
  */
 function filterSubmissionsByUser(blacklistEntries) {
   const submissions = getSubmissions();
 
   const submissionTable = getSubmissionTable();
 
-  let somethingRemoved = false;
+  let submissionsFiltered = 0;
 
   blacklistEntries.forEach((entry) => {
     if (entry.prefix !== 'user') {
@@ -390,29 +403,31 @@ function filterSubmissionsByUser(blacklistEntries) {
         // Delete the spacer row after the submission
         submissionTable.deleteRow(submissionInfo.rowIndex);
 
-        somethingRemoved = true;
+        submissionsFiltered++;
       }
     }
   });
 
-  return somethingRemoved;
+  return submissionsFiltered;
 }
 
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page matching an entry in the specified blacklist.
- * Returns a boolean indicating
- * whether or not at least one submission was filtered out.
  * @param {set} blacklist - A set containing the domains to filter out.
+ * @returns {FilterResults} An object containing how many submissions were filtered out.
  */
 function filterSubmissions(blacklist) {
-  const submissionFilteredBySource = filterSubmissionsBySource(blacklist);
-  const submissionFilteredByTitle = filterSubmissionsByTitle(blacklist);
-  const submissionFilteredByUser = filterSubmissionsByUser(blacklist);
+  const submissionsFilteredBySource = filterSubmissionsBySource(blacklist);
+  const submissionsFilteredByTitle = filterSubmissionsByTitle(blacklist);
+  const submissionsFilteredByUser = filterSubmissionsByUser(blacklist);
 
-  return submissionFilteredBySource
-    || submissionFilteredByTitle
-    || submissionFilteredByUser;
+  const filterResults = new FilterResults();
+  filterResults.submissionsFilteredBySource = submissionsFilteredBySource;
+  filterResults.submissionsFilteredByTitle = submissionsFilteredByTitle;
+  filterResults.submissionsFilteredByUser = submissionsFilteredByUser;
+
+  return filterResults;
 }
 
 /**
@@ -708,9 +723,9 @@ function main() {
 
   const topRank = getTopRank();
 
-  const somethingRemoved = filterSubmissions(blacklistEntries);
+  const filterResults = filterSubmissions(blacklistEntries);
 
-  if (!somethingRemoved) {
+  if (filterResults.getTotalSubmissionsFilteredOut() === 0) {
     logInfo('Nothing filtered');
 
     return;
