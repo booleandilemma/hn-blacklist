@@ -41,6 +41,13 @@ class FilterResults {
   }
 }
 
+class TestResults {
+  constructor() {
+    this.failCount = null;
+    this.testCount = null;
+  }
+}
+
 /**
  * Logs an info message to the console.
  * @param {string} message - Specifies the message to log.
@@ -693,7 +700,11 @@ function runTests() {
     logInfo(`Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)}`);
   }
 
-  return results;
+  const testResults = new TestResults();
+  testResults.failCount = failCount;
+  testResults.testCount = testCount;
+
+  return testResults;
 }
 
 function displayResults(filterResults, testResults) {
@@ -708,18 +719,6 @@ function displayResults(filterResults, testResults) {
      */
     return;
   }
-
-  const testCount = testResults.length;
-  let allTestsPass = true;
-  let failCount = 0;
-
-  for (let i = 0; i < testResults.length; i++) {
-    if (testResults[i].status === "failed") {
-      allTestsPass = false;
-      failCount++;
-    }
-  }
-  
 
   const mainTable = document.getElementById("hnmain");
 
@@ -749,7 +748,7 @@ function displayResults(filterResults, testResults) {
           <td>Filtered by User: ${filterResults.submissionsFilteredByUser}</td>
         </tr>
         <tr>
-          <td>Test Results ${testCount - failCount}/${testCount} Passed</td>
+          <td>Test Results ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed</td>
         </tr>
       </tbody>
       </table>
