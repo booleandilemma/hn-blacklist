@@ -2,7 +2,7 @@
 // @name         HN Blacklist
 // @author       booleandilemma
 // @description  Hide Hacker News submissions from sources you don't want to see
-// @homepageURL  https://github.com/booleandilemma/hn-blacklist
+// @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
 // @version      2.1.1
