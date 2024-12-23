@@ -76,7 +76,7 @@ function logError(message) {
 /**
  * Updates the specified submission to the specified rank.
  * @param {?object} submission - Specifies the HN submission.
- * @param {?number} newRank - Specifies the new rank to set on the specified submission.
+ * @param {number} newRank - Specifies the new rank to set on the specified submission.
  */
 function setRank(submission, newRank) {
   if (submission === null) {
