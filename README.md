@@ -11,7 +11,9 @@ HN Blacklist is a [userscript](https://en.wikipedia.org/wiki/Userscript) which c
 
 Find it on [Greasy Fork](https://greasyfork.org/en/scripts/427213-hn-blacklist), or copy and paste it right from here.
 
-## Filtering by domain
+## Filtering
+
+### By domain:
 
 Simply modify `hn-blacklist.js` - adding the domains of sites you don't want to see articles from:
 
@@ -25,7 +27,7 @@ const blacklist = new Set(
 );
 ```
 
-## Filtering by title text
+### By title text:
 
 If you're tired of seeing articles mentioning "ChatGPT", for example, add the following to the blacklist:
 
@@ -40,7 +42,7 @@ const blacklist = new Set(
 
 All titles containing the string "ChatGPT" will be filtered out. This filtering is case-insensitive.
 
-## Filtering by user
+### By user:
 
 If you want to filter out submissions by a certain user, prefix your blacklist entry with the string `user:`, followed by the username.
 
@@ -52,3 +54,9 @@ const blacklist = new Set(
     ]
 );
 ```
+
+## Info Display
+
+As of [release 2.1.0](https://github.com/booleandilemma/hn-blacklist/releases/tag/2.1.0) HN Blacklist now displays helpful information at the bottom of HN:
+
+[An HN Blacklist UI](https://github.com/booleandilemma/hn-blacklist/blob/master/ui.png)
