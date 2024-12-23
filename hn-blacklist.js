@@ -407,7 +407,7 @@ function filterSubmissionsByUser(blacklistEntries) {
       const submissionInfo = getSubmissionInfo(submissions[j]);
 
       if (submissionInfo.submitter !== null
-        && submissionInfo.submitter.toLowerCase().includes(entry.text.toLowerCase())) {
+        && submissionInfo.submitter.toLowerCase() === entry.text.toLowerCase()) {
         logInfo(`User blacklisted - removing ${JSON.stringify(submissionInfo)}`);
 
         // Delete the submission
