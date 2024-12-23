@@ -55,7 +55,7 @@ const blacklist = new Set(
 );
 ```
 
-## Info Display
+## UI
 
 As of [release 2.1.0](https://github.com/booleandilemma/hn-blacklist/releases/tag/2.1.0) HN Blacklist now displays helpful information at the bottom of HN:
 
