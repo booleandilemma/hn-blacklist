@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      2.3.0
+// @version      2.3.1
 // @grant        none
 // @license      GPL-3.0
 // ==/UserScript==
