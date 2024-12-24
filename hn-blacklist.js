@@ -114,21 +114,21 @@ class FilterResults {
      * @type {number}
      * @public
      */
-    this.submissionsFilteredBySource = null;
+    this.submissionsFilteredBySource = 0;
 
     /**
      * submissionsFilteredByTitle indicates the number of submissions filtered by title.
      * @type {number}
      * @public
      */
-    this.submissionsFilteredByTitle = null;
+    this.submissionsFilteredByTitle = 0;
 
     /**
      * submissionsFilteredByUser indicates the number of submissions filtered by user.
      * @type {number}
      * @public
      */
-    this.submissionsFilteredByUser = null;
+    this.submissionsFilteredByUser = 0;
   }
 
   /**
@@ -144,6 +144,7 @@ class FilterResults {
 
 class TestResults {
   constructor() {
+    this.filterEvenWithTestFailures = null;
     this.failCount = null;
     this.testCount = null;
   }
@@ -656,7 +657,7 @@ class Blacklister {
 
     const statsRow = document.createElement("tr");
 
-    let entryValidityMessage = "";
+    let entryValidityMessage;
 
     if (this.blacklistEntries.length > 0) {
       const invalidEntriesExist = this.blacklistEntries.some((e) => !e.isValid);
@@ -665,6 +666,22 @@ class Blacklister {
       entryValidityMessage = invalidEntriesExist ? errorMessage : "All entries valid";
     } else {
       entryValidityMessage = "No entries supplied";
+    }
+
+    let filteredMessage;
+
+    if (testResults.failCount > 0) {
+      if (!testResults.filterEvenWithTestFailures) {
+        filteredMessage = "One or more tests failed - did not try to filter"
+      } else {
+        filteredMessage = `${filterResults.submissionsFilteredBySource} by source, 
+        ${filterResults.submissionsFilteredByTitle} by title, 
+        ${filterResults.submissionsFilteredByUser} by user`;
+      }
+    } else {
+      filteredMessage = `${filterResults.submissionsFilteredBySource} by source, 
+      ${filterResults.submissionsFilteredByTitle} by title, 
+      ${filterResults.submissionsFilteredByUser} by user`;
     }
 
     const stats = `
@@ -678,10 +695,7 @@ class Blacklister {
         </tr>
         <tr>
           <td>
-            <p>Filtered: 
-              ${filterResults.submissionsFilteredBySource} by source, 
-              ${filterResults.submissionsFilteredByTitle} by title, 
-              ${filterResults.submissionsFilteredByUser} by user.
+            <p>Filtered: ${filteredMessage}.
             </p>
           </td>
         </tr>
@@ -720,6 +734,7 @@ class PageEngineTester {
   runTests() {
     let results = [];
 
+    results = results.concat(this.#test_getSubmissionTable_ableToGetSubmissionTable());
     results = results.concat(this.#test_getSubmissions_numberOfSubmissionsIsCorrect());
     results = results.concat(this.#test_getRank_ableToGetRank());
     results = results.concat(this.#test_getSubmitter_ableToGetSubmitter());
@@ -749,6 +764,35 @@ class PageEngineTester {
     testResults.testCount = testCount;
 
     return testResults;
+  }
+
+  #test_getSubmissionTable_ableToGetSubmissionTable() {
+    // Arrange
+    const testName = "test_getSubmissionTable_ableToGetSubmissionTable";
+    const results = [];
+
+    // Act
+    let table;
+    try {
+      table = this.pageEngine.getSubmissionTable();
+    } catch {
+      // Empty
+    }
+
+    // Assert
+    const result = {
+      name: testName,
+      status: "passed",
+    };
+
+    if (table == null) {
+      result.status = "failed";
+      result.message = "Unable to obtain submission table";
+    }
+
+    results.push(result);
+
+    return results;
   }
 
   #test_getSubmissions_numberOfSubmissionsIsCorrect() {
@@ -951,10 +995,17 @@ function main() {
   const pageEngineTester = new PageEngineTester(pageEngine);
 
   /*
-   * If one or more tests fail, it's a good sign that the rest of the script won't work as intended.
+   * If one or more tests fail, it's a good sign that the 
+   * rest of the script won't work as intended.
+   * Therefore, we won't filter anything by default.
+   * To try filtering anyway, change the variable
+   * "filterEvenWithTestFailures" to true.
    */
   const testResults = pageEngineTester.runTests();
 
+  const filterEvenWithTestFailures = false;
+
+  testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
   /*
    * Add sources you don't want to see here.
    *
@@ -975,7 +1026,14 @@ function main() {
 
   blacklister.warnAboutInvalidBlacklistEntries();
 
-  const filterResults = blacklister.filterSubmissions();
+  let filterResults = null;
+
+  if (filterEvenWithTestFailures || testResults.failCount === 0) {
+    filterResults = blacklister.filterSubmissions();
+
+  } else {
+    filterResults = new FilterResults();
+  }
 
   const timeTaken = performance.now() - startTime;
 
