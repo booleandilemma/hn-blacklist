@@ -355,6 +355,11 @@ class PageEngine {
     return null;
   }
 
+  /**
+   * Returns the submitter of the specified submission.
+   * @param {?object} submission - Specifies the HN submission.
+   * @returns {?string} the username of the submitter.
+   */
   getSubmitter(submission) {
     if (submission === null) {
       logWarning("submission is null");
@@ -621,10 +626,11 @@ class Blacklister {
 
   /**
    * Displays results to the user.
+   * @param {number} timeTaken - The time the script took to execute.
    * @param {FilterResults} filterResults - High-level results of what was done.
    * @param {TestResults} testResults - A summary of test results.
    */
-  displayResults(filterResults, testResults) {
+  displayResults(timeTaken, filterResults, testResults) {
     const hnblacklistTable = document.getElementById("hnblacklist");
 
     if (hnblacklistTable !== null) {
@@ -684,6 +690,9 @@ class Blacklister {
         </tr>
         <tr>
           <td>Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed</td>
+        </tr>
+        <tr>
+          <td>Execution Time: ${timeTaken} ms</td>
         </tr>
       </tbody>
       </table>
@@ -936,6 +945,8 @@ class PageEngineTester {
 }
 
 function main() {
+  const startTime = performance.now();
+
   const pageEngine = new PageEngine();
   const pageEngineTester = new PageEngineTester(pageEngine);
 
@@ -966,11 +977,13 @@ function main() {
 
   const filterResults = blacklister.filterSubmissions();
 
+  const timeTaken = performance.now() - startTime;
+
   /*
    * Here we display the summary of what we've filtered at the bottom of the page.
    * Commenting this out won't affect the rest of the functionality of the script.
    */
-  blacklister.displayResults(filterResults, testResults);
+  blacklister.displayResults(timeTaken, filterResults, testResults);
 }
 
 main();
