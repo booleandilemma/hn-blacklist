@@ -828,25 +828,20 @@ class PageEngineTester {
     const testName = testToRun.name.startsWith("#") ? testToRun.name.substring(1) : testToRun.name;
 
     try {
-      const result = testToRun(this);
-      if (result != null) {
-        result.name = testName;
-
-        return result;
-      } else {
-        return {
-          name: testName,
-          status: "passed",
-        };
-      }
+      testToRun(this);
     } catch (error) {
       return {
         name: testName,
-        status: "failed",
+        status: error.status ?? "failed",
         message: error.message,
         stackTrace: error.stack,
       };
     }
+
+    return {
+      name: testName,
+      status: "passed",
+    };
   }
 
   #test_getSubmissionTable_ableToGetSubmissionTable(tester) {
@@ -862,10 +857,9 @@ class PageEngineTester {
 
     // Assert
     if (table == null) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Unable to obtain submission table",
-      };
+      });
     }
   }
 
@@ -878,14 +872,13 @@ class PageEngineTester {
 
     // Assert
     if (submissions == null) {
-      return result;
+      tester.failWith(result);
     }
 
     if (submissions.length !== expectedLength) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: `Submissions length is wrong. expected ${expectedLength}, got ${submissions.length}`,
-      };
+      });
     }
   }
 
@@ -894,15 +887,14 @@ class PageEngineTester {
     const { submissions, result } = tester.getSubmissionsWithResult();
 
     if (submissions == null) {
-      return result;
+      tester.failWith(result);
     }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Submissions length less than 5, can't get a rank",
-      };
+      });
     }
 
     // Act
@@ -916,10 +908,9 @@ class PageEngineTester {
 
     // Assert
     if (firstRankOnPage == null) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "First submission rank is null",
-      };
+      });
     }
 
     let fifthRank = null;
@@ -931,10 +922,9 @@ class PageEngineTester {
     }
 
     if (fifthRank == null) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Fifth submission rank is null",
-      };
+      });
     }
 
     /*
@@ -942,10 +932,9 @@ class PageEngineTester {
      * on any submissions page.
      */
     if (fifthRank !== (firstRankOnPage + 4)) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Unable to obtain submission rank",
-      };
+      });
     }
   }
 
@@ -962,10 +951,9 @@ class PageEngineTester {
 
     // Assert
     if (topRank == null) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Unable to get top rank",
-      };
+      });
     }
   }
 
@@ -974,15 +962,14 @@ class PageEngineTester {
     const { submissions, result } = tester.getSubmissionsWithResult();
 
     if (submissions == null) {
-      return result;
+      tester.failWith(result);
     }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Submissions length less than 5, can't get a rank",
-      };
+      });
     }
 
     // Act
@@ -996,10 +983,9 @@ class PageEngineTester {
 
     // Assert
     if (submitter == null || submitter.trim() === "") {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Couldn't get submitter",
-      };
+      });
     }
   }
 
@@ -1009,15 +995,14 @@ class PageEngineTester {
     const submissions = submissionsAndResult.submissions;
 
     if (submissions == null) {
-      return submissionsAndResult.result;
+      tester.failWith(submissionsAndResult.result);
     }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Submissions length less than 5, can't get a rank",
-      };
+      });
     }
 
     // Act
@@ -1025,7 +1010,7 @@ class PageEngineTester {
 
     // Assert
     if (titleInfo == null) {
-      return result;
+      tester.failWith(result);
     }
   }
 
@@ -1035,21 +1020,20 @@ class PageEngineTester {
     const submissions = submissionsAndResult.submissions;
 
     if (submissions == null) {
-      return submissionsAndResult.result;
+      tester.failWith(submissionsAndResult.result);
     }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Submissions length less than 5, can't get a rank",
-      };
+      });
     }
 
     const { titleInfo, result } = tester.getTitleInfoWithResult(submissions[4]);
 
     if (titleInfo == null) {
-      return result;
+      tester.failWith(result);
     }
 
     // Act
@@ -1057,10 +1041,9 @@ class PageEngineTester {
 
     // Assert
     if (titleText == null || titleText.trim() === "") {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Unable to get title text on title info",
-      };
+      });
     }
   }
 
@@ -1070,21 +1053,20 @@ class PageEngineTester {
     const submissions = submissionsAndResult.submissions;
 
     if (submissions == null) {
-      return submissionsAndResult.result;
+      tester.failWith(submissionsAndResult.result);
     }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Submissions length less than 5, can't get a rank",
-      };
+      });
     }
 
     const { titleInfo, result } = tester.getTitleInfoWithResult(submissions[4]);
 
     if (titleInfo == null) {
-      return result;
+      tester.failWith(result);
     }
 
     // Act
@@ -1092,10 +1074,9 @@ class PageEngineTester {
 
     // Assert
     if (source == null || source.trim() === "") {
-      return {
-        status: "failed",
+      tester.failWith({
         message: "Unable to get source on title info",
-      };
+      });
     }
   }
 
@@ -1112,7 +1093,6 @@ class PageEngineTester {
       return {
         submissions: null,
         result: {
-          status: "failed",
           message: "Unable to obtain submission",
         },
       };
@@ -1137,7 +1117,6 @@ class PageEngineTester {
       return {
         titleInfo: null,
         result: {
-          status: "failed",
           message: "Couldn't get title info",
         },
       };
@@ -1147,6 +1126,12 @@ class PageEngineTester {
       titleInfo,
       result: null,
     };
+  }
+
+  failWith(result) {
+    result.status = "failed";
+
+    throw result;
   }
 }
 
