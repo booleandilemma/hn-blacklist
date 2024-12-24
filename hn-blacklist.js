@@ -392,7 +392,8 @@ class PageEngine {
     const { nextSibling } = submission;
     if (nextSibling === null) {
       // TODO: this might be a bug
-      logWarning("nextSibling is null");
+      const rank = this.getRank(submission);
+      logWarning(`nextSibling is null. rank is: ${rank}`);
 
       return null;
     }
@@ -400,7 +401,8 @@ class PageEngine {
     const userLink = nextSibling.querySelector(".hnuser");
 
     if (userLink == null) {
-      logWarning("userLink is null");
+      const rank = this.getRank(submission);
+      logWarning(`userLink is null. rank is: ${rank}`);
 
       return null;
     }
