@@ -409,7 +409,7 @@ function filterSubmissionsByTitle(blacklistEntries) {
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page submitted by the specified user.
- * @param {Entry[]} blacklistEntries A list containing entries to filter on.
+ * @param {Entry[]} blacklistEntries - A list containing entries to filter on.
  * @returns {number} A number indicating how many submissions were filtered out.
  */
 function filterSubmissionsByUser(blacklistEntries) {
@@ -451,7 +451,7 @@ function filterSubmissionsByUser(blacklistEntries) {
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page matching an entry in the specified blacklist.
- * @param {Entry[]} blacklistEntries A list of entries containing the submissions to filter out.
+ * @param {Entry[]} blacklistEntries - A list of entries containing the submissions to filter out.
  * @returns {FilterResults} An object containing how many submissions were filtered out.
  */
 function filterSubmissions(blacklistEntries) {
@@ -504,7 +504,7 @@ function getTopRank() {
 
 /**
  * Warns the user about invalid entries.
- * @param {Entry[]} blacklistEntries A list of entries containing the submissions to filter out.
+ * @param {Entry[]} blacklistEntries - A list of entries containing the submissions to filter out.
  */
 function warnAboutInvalidBlacklistEntries(blacklistEntries) {
   blacklistEntries.forEach((entry) => {
