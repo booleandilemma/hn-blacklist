@@ -179,7 +179,13 @@ class PageEngine {
    * Get the thing holding the list of submissions.
    */
   getSubmissionTable() {
-    return document.querySelectorAll(".athing")[0].parentElement;
+    const submissions = this.getSubmissions();
+
+    if (submissions == null || submissions.length === 0) {
+      return null;
+    }
+
+    return submissions[0].parentElement;
   }
 
   /**
@@ -242,7 +248,7 @@ class PageEngine {
    * @param {number} topRank - Specifies the top rank to start numbering from.
    */
   reindexSubmissions(topRank) {
-    const submissions = document.querySelectorAll(".athing");
+    const submissions = this.getSubmissions();
 
     for (let i = 0; i < submissions.length; i++) {
       this.setRank(submissions[i], topRank + i);
@@ -252,9 +258,22 @@ class PageEngine {
   /**
    * Scans the list of submissions on the current HN page
    * and returns the rank of the first submission in the list.
+   * @returns {?number} The rank of the first HN submission.
    */
   getTopRank() {
-    const submissions = document.querySelectorAll(".athing");
+    const submissions = this.getSubmissions();
+
+    if (submissions == null) {
+      logWarning("submissions are null");
+
+      return null;
+    }
+
+    if (submissions.length === 0) {
+      logWarning("submissions are empty");
+
+      return null;
+    }
 
     const topRank = this.getRank(submissions[0]);
 
@@ -774,6 +793,7 @@ class PageEngineTester {
     results.push(this.#test_getSubmissionTable_ableToGetSubmissionTable());
     results.push(this.#test_getSubmissions_numberOfSubmissionsIsCorrect());
     results.push(this.#test_getRank_ableToGetRank());
+    results.push(this.#test_getTopRank_ableToGetTopRank());
     results.push(this.#test_getSubmitter_ableToGetSubmitter());
     results.push(this.#test_getTitleInfo_ableToGetTitleInfo());
     results.push(this.#test_getTitleText_ableToGetTitleText());
@@ -922,6 +942,34 @@ class PageEngineTester {
         name: testName,
         status: "failed",
         message: "Unable to obtain submission rank",
+      };
+    }
+
+    return {
+      name: testName,
+      status: "passed",
+    };
+  }
+
+  #test_getTopRank_ableToGetTopRank() {
+    // Arrange
+    const testName = "test_getTopRank_ableToGetTopRank";
+
+    // Act
+    let topRank = null;
+
+    try {
+      topRank = this.pageEngine.getTopRank();
+    } catch {
+      // Empty
+    }
+
+    // Assert
+    if (topRank == null) {
+      return {
+        name: testName,
+        status: "failed",
+        message: "Unable to get top rank",
       };
     }
 
