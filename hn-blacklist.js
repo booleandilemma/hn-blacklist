@@ -12,6 +12,35 @@
 
 "use strict";
 
+/* ========================== Configuration Info Starts Here ========================== */
+
+/*
+ * Add sources you don't want to see here.
+ *
+ * Three types of sources can be filtered on:
+ *
+ * 1) "source:" will filter the submission by the domain it comes from.
+ * 2) "title:" will filter the submission by the words contained in the title.
+ * 3) "user:" will filter the submission by the user who submitted it.
+ *
+ * For example, "source:example.com" will filter all submissions coming from "example.com".
+ */
+const blacklist = new Set(
+  [
+  ],
+);
+
+/*
+ * If one or more tests fail, it's a good sign that the
+ * rest of the script won't work as intended.
+ * Therefore, we won't filter anything by default.
+ * To try filtering anyway, change the variable
+ * "filterEvenWithTestFailures" to true.
+ */
+const filterEvenWithTestFailures = false;
+
+/* ========================== Configuration Info Ends Here ========================== */
+
 const UserScriptName = "HN Blacklist";
 
 /**
@@ -139,14 +168,6 @@ class FilterResults {
     return this.submissionsFilteredBySource
       + this.submissionsFilteredByTitle
       + this.submissionsFilteredByUser;
-  }
-}
-
-class TestResults {
-  constructor() {
-    this.filterEvenWithTestFailures = null;
-    this.failCount = null;
-    this.testCount = null;
   }
 }
 
@@ -556,22 +577,22 @@ class Blacklister {
    * Builds a list of entries from user input.
    * @param {PageEngine} pageEngine -
    * The page engine is responsible for low-level interaction with HN.
-   * @param {set} blacklist - A set containing the things to filter on.
+   * @param {set} blacklistInput - A set containing the things to filter on.
    */
-  constructor(pageEngine, blacklist) {
+  constructor(pageEngine, blacklistInput) {
     this.pageEngine = pageEngine;
-    this.blacklistEntries = this.buildEntries(blacklist);
+    this.blacklistEntries = this.buildEntries(blacklistInput);
   }
 
   /**
    * Builds a list of entries from user input.
-   * @param {set} blacklist - A set containing the things to filter on.
+   * @param {set} blacklistInput - A set containing the things to filter on.
    * @returns {Entry[]} An array of entries.
    */
-  buildEntries(blacklist) {
+  buildEntries(blacklistInput) {
     const entries = [];
 
-    blacklist.forEach((input) => {
+    blacklistInput.forEach((input) => {
       if (input !== null) {
         entries.push(new Entry(input));
       }
@@ -672,7 +693,7 @@ class Blacklister {
 
     if (testResults.failCount > 0) {
       if (!testResults.filterEvenWithTestFailures) {
-        filteredMessage = "One or more tests failed - did not try to filter"
+        filteredMessage = "One or more tests failed - did not try to filter";
       } else {
         filteredMessage = `${filterResults.submissionsFilteredBySource} by source, 
         ${filterResults.submissionsFilteredByTitle} by title, 
@@ -682,6 +703,12 @@ class Blacklister {
       filteredMessage = `${filterResults.submissionsFilteredBySource} by source, 
       ${filterResults.submissionsFilteredByTitle} by title, 
       ${filterResults.submissionsFilteredByUser} by user`;
+    }
+
+    let testResultsMessage = `${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed.`;
+
+    if (testResults.failCount > 0) {
+      testResultsMessage += " Check the log for details.";
     }
 
     const stats = `
@@ -703,7 +730,7 @@ class Blacklister {
           <td>Entry Validity: ${entryValidityMessage}.</td>
         </tr>
         <tr>
-          <td>Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed</td>
+          <td>Test Results: ${testResultsMessage}</td>
         </tr>
         <tr>
           <td>Execution Time: ${timeTaken} ms</td>
@@ -714,6 +741,14 @@ class Blacklister {
 
     statsRow.innerHTML = stats;
     tbody.appendChild(statsRow);
+  }
+}
+
+class TestResults {
+  constructor() {
+    this.filterEvenWithTestFailures = null;
+    this.failCount = null;
+    this.testCount = null;
   }
 }
 
@@ -994,33 +1029,9 @@ function main() {
   const pageEngine = new PageEngine();
   const pageEngineTester = new PageEngineTester(pageEngine);
 
-  /*
-   * If one or more tests fail, it's a good sign that the 
-   * rest of the script won't work as intended.
-   * Therefore, we won't filter anything by default.
-   * To try filtering anyway, change the variable
-   * "filterEvenWithTestFailures" to true.
-   */
   const testResults = pageEngineTester.runTests();
 
-  const filterEvenWithTestFailures = false;
-
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
-  /*
-   * Add sources you don't want to see here.
-   *
-   * Three types of sources can be filtered on:
-   *
-   * 1) "source:" will filter the submission by the domain it comes from.
-   * 2) "title:" will filter the submission by the words contained in the title.
-   * 3) "user:" will filter the submission by the user who submitted it.
-   *
-   * For example, "source:example.com" will filter all submissions coming from "example.com".
-   */
-  const blacklist = new Set(
-    [
-    ],
-  );
 
   const blacklister = new Blacklister(pageEngine, blacklist);
 
@@ -1030,7 +1041,6 @@ function main() {
 
   if (filterEvenWithTestFailures || testResults.failCount === 0) {
     filterResults = blacklister.filterSubmissions();
-
   } else {
     filterResults = new FilterResults();
   }
