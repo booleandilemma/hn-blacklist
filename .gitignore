@@ -105,3 +105,6 @@ dist
 
 # Custom
 *.min.js
+
+# For jsdoc
+out/
