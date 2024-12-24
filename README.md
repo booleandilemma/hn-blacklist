@@ -60,3 +60,7 @@ const blacklist = new Set(
 As of [release 2.1.0](https://github.com/booleandilemma/hn-blacklist/releases/tag/2.1.0), HN Blacklist displays helpful information at the bottom of HN:
 
 <img width="263" alt="ui" src="https://github.com/user-attachments/assets/494a7721-5807-4343-a2a5-33568322d9c6" />
+
+## Testing
+
+TBD
