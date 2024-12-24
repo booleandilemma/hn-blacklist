@@ -17,6 +17,7 @@ module.exports = {
         'camelcase': 'off',
         'max-classes-per-file': 'off',
         'strict': 'off',
+        'prefer-destructuring': 'off',
       }
     }
   ],

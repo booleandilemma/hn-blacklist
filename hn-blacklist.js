@@ -797,6 +797,7 @@ class PageEngineTester {
     results.push(this.#test_getSubmitter_ableToGetSubmitter());
     results.push(this.#test_getTitleInfo_ableToGetTitleInfo());
     results.push(this.#test_getTitleText_ableToGetTitleText());
+    results.push(this.#test_getSource_ableToGetSource());
 
     let allTestsPass = true;
     let failCount = 0;
@@ -860,11 +861,10 @@ class PageEngineTester {
     // Act
     const { submissions, result } = this.#getSubmissionsWithResult(testName);
 
+    // Assert
     if (submissions == null) {
       return result;
     }
-
-    // Assert
 
     if (submissions.length !== expectedLength) {
       return {
@@ -1026,10 +1026,11 @@ class PageEngineTester {
     // Arrange
     const testName = "test_getTitleInfo_ableToGetTitleInfo";
 
-    const { submissions, result } = this.#getSubmissionsWithResult(testName);
+    const submissionsAndResult = this.#getSubmissionsWithResult(testName);
+    const submissions = submissionsAndResult.submissions;
 
     if (submissions == null) {
-      return result;
+      return submissionsAndResult.result;
     }
 
     // Arbitrarily testing the 5th submission.
@@ -1042,15 +1043,11 @@ class PageEngineTester {
     }
 
     // Act
-    const titleInfo = this.pageEngine.getTitleInfo(submissions[4]);
+    const { titleInfo, result } = this.#getTitleInfoWithResult(testName, submissions[4]);
 
     // Assert
     if (titleInfo == null) {
-      return {
-        name: testName,
-        status: "failed",
-        message: "Couldn't get title info",
-      };
+      return result;
     }
 
     return {
@@ -1063,10 +1060,11 @@ class PageEngineTester {
     // Arrange
     const testName = "test_getTitleText_ableToGetTitleText";
 
-    const { submissions, result } = this.#getSubmissionsWithResult(testName);
+    const submissionsAndResult = this.#getSubmissionsWithResult(testName);
+    const submissions = submissionsAndResult.submissions;
 
     if (submissions == null) {
-      return result;
+      return submissionsAndResult.result;
     }
 
     // Arbitrarily testing the 5th submission.
@@ -1078,14 +1076,10 @@ class PageEngineTester {
       };
     }
 
-    const titleInfo = this.pageEngine.getTitleInfo(submissions[4]);
+    const { titleInfo, result } = this.#getTitleInfoWithResult(testName, submissions[4]);
 
     if (titleInfo == null) {
-      return {
-        name: testName,
-        status: "failed",
-        message: "Couldn't get title info",
-      };
+      return result;
     }
 
     // Act
@@ -1097,6 +1091,50 @@ class PageEngineTester {
         name: testName,
         status: "failed",
         message: "Unable to get title text on title info",
+      };
+    }
+
+    return {
+      name: testName,
+      status: "passed",
+    };
+  }
+
+  #test_getSource_ableToGetSource() {
+    // Arrange
+    const testName = "test_getSource_ableToGetSource";
+
+    const submissionsAndResult = this.#getSubmissionsWithResult(testName);
+    const submissions = submissionsAndResult.submissions;
+
+    if (submissions == null) {
+      return submissionsAndResult.result;
+    }
+
+    // Arbitrarily testing the 5th submission.
+    if (submissions.length < 5) {
+      return {
+        name: testName,
+        status: "failed",
+        message: "Submissions length less than 5, can't get a rank",
+      };
+    }
+
+    const { titleInfo, result } = this.#getTitleInfoWithResult(testName, submissions[4]);
+
+    if (titleInfo == null) {
+      return result;
+    }
+
+    // Act
+    const source = this.pageEngine.getSource(titleInfo);
+
+    // Assert
+    if (source == null || source.trim() === "") {
+      return {
+        name: testName,
+        status: "failed",
+        message: "Unable to get source on title info",
       };
     }
 
@@ -1128,6 +1166,32 @@ class PageEngineTester {
 
     return {
       submissions,
+      result: null,
+    };
+  }
+
+  #getTitleInfoWithResult(testName, submission) {
+    let titleInfo = null;
+
+    try {
+      titleInfo = this.pageEngine.getTitleInfo(submission);
+    } catch {
+      // Empty
+    }
+
+    if (titleInfo == null) {
+      return {
+        titleInfo: null,
+        result: {
+          name: testName,
+          status: "failed",
+          message: "Couldn't get title info",
+        },
+      };
+    }
+
+    return {
+      titleInfo,
       result: null,
     };
   }
