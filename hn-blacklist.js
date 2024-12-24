@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      2.2.0
+// @version      2.2.1
 // @grant        none
 // @license      GPL-3.0
 // ==/UserScript==
@@ -15,16 +15,37 @@
 const UserScriptName = "HN Blacklist";
 
 class Entry {
-  constructor(prefixedInput) {
-    this.buildEntry(prefixedInput);
+  constructor(input) {
+    this.isValid = null;
+    this.prefix = null;
+    this.text = null;
+
+    this.buildEntry(input);
   }
 
-  buildEntry(prefixedInput) {
-    const prefix = prefixedInput.substring(0, prefixedInput.indexOf(":"));
-    const text = prefixedInput.substring(prefixedInput.indexOf(":") + 1);
+  #isValidInput(input) {
+    if (input.startsWith("source:")
+      || input.startsWith("title:")
+      || input.startsWith("user:")) {
+      return true;
+    }
 
-    this.prefix = prefix;
-    this.text = text;
+    return false;
+  }
+
+  buildEntry(input) {
+    this.isValid = this.#isValidInput(input);
+
+    if (this.isValid) {
+      const prefix = input.substring(0, input.indexOf(":"));
+      const text = input.substring(input.indexOf(":") + 1);
+
+      this.prefix = prefix;
+      this.text = text;
+    } else {
+      this.prefix = null;
+      this.text = input;
+    }
   }
 }
 
@@ -306,7 +327,7 @@ function getSubmissions() {
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page with a domain source contained in the specified blacklist.
- * @param {set} blacklistEntries - A list containing entries to filter on.
+ * @param {Entry[]} blacklistEntries - A list containing entries to filter on.
  * @returns {number} A number indicating how many submissions were filtered out.
  */
 function filterSubmissionsBySource(blacklistEntries) {
@@ -347,7 +368,7 @@ function filterSubmissionsBySource(blacklistEntries) {
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page with a title substring contained in the specified blacklist.
- * @param {set} blacklistEntries - A list containing entries to filter on.
+ * @param {Entry[]} blacklistEntries - A list containing entries to filter on.
  * @returns {number} A number indicating how many submissions were filtered out.
  */
 function filterSubmissionsByTitle(blacklistEntries) {
@@ -388,7 +409,7 @@ function filterSubmissionsByTitle(blacklistEntries) {
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page submitted by the specified user.
- * @param {set} blacklistEntries A list containing entries to filter on.
+ * @param {Entry[]} blacklistEntries A list containing entries to filter on.
  * @returns {number} A number indicating how many submissions were filtered out.
  */
 function filterSubmissionsByUser(blacklistEntries) {
@@ -430,13 +451,15 @@ function filterSubmissionsByUser(blacklistEntries) {
 /**
  * Filters out (i.e. deletes) all submissions on the
  * current HN page matching an entry in the specified blacklist.
- * @param {set} blacklist - A set containing the domains to filter out.
+ * @param {Entry[]} blacklistEntries A list of entries containing the submissions to filter out.
  * @returns {FilterResults} An object containing how many submissions were filtered out.
  */
-function filterSubmissions(blacklist) {
-  const submissionsFilteredBySource = filterSubmissionsBySource(blacklist);
-  const submissionsFilteredByTitle = filterSubmissionsByTitle(blacklist);
-  const submissionsFilteredByUser = filterSubmissionsByUser(blacklist);
+function filterSubmissions(blacklistEntries) {
+  const validEntries = blacklistEntries.filter((e) => e.isValid);
+
+  const submissionsFilteredBySource = filterSubmissionsBySource(validEntries);
+  const submissionsFilteredByTitle = filterSubmissionsByTitle(validEntries);
+  const submissionsFilteredByUser = filterSubmissionsByUser(validEntries);
 
   const filterResults = new FilterResults();
   filterResults.submissionsFilteredBySource = submissionsFilteredBySource;
@@ -479,39 +502,30 @@ function getTopRank() {
   return topRank;
 }
 
-function isValidInput(input) {
-  if (input.startsWith("source:")
-    || input.startsWith("title:")
-    || input.startsWith("user:")) {
-    return true;
-  }
-
-  return false;
-}
-
-function warnAboutInvalidBlacklistEntries(blacklist) {
-  let invalidEntriesExist = false;
-
-  blacklist.forEach((input) => {
-    if (!isValidInput(input)) {
-      logError(`"${input}" is an invalid entry and will be skipped. `
+/**
+ * Warns the user about invalid entries.
+ * @param {Entry[]} blacklistEntries A list of entries containing the submissions to filter out.
+ */
+function warnAboutInvalidBlacklistEntries(blacklistEntries) {
+  blacklistEntries.forEach((entry) => {
+    if (!entry.isValid) {
+      logError(`"${entry.text}" is an invalid entry and will be skipped. `
         + `Entries must begin with "source:", "title:", or "user:".`);
-
-      invalidEntriesExist = true;
     }
   });
-
-  return invalidEntriesExist;
 }
 
+/**
+ * Builds a list of entries from the specified blacklist.
+ * @param {set} blacklist - A set containing the things to filter on.
+ * @returns {Entry[]} An array of entries.
+ */
 function buildEntries(blacklist) {
   const entries = [];
 
   blacklist.forEach((input) => {
-    if (isValidInput(input)) {
-      entries.push(
-        new Entry(input),
-      );
+    if (input !== null) {
+      entries.push(new Entry(input));
     }
   });
 
@@ -744,7 +758,7 @@ function runTests() {
   return testResults;
 }
 
-function displayResults(blacklist, filterResults, testResults, invalidEntriesExist) {
+function displayResults(blacklistEntries, filterResults, testResults) {
   const hnblacklistTable = document.getElementById("hnblacklist");
 
   if (hnblacklistTable !== null) {
@@ -772,8 +786,11 @@ function displayResults(blacklist, filterResults, testResults, invalidEntriesExi
 
   let entryValidityMessage = "";
 
-  if (blacklist.size > 0) {
-    entryValidityMessage = invalidEntriesExist ? "One or more of your entries is invalid. Check the log for details" : "All entries valid";
+  if (blacklistEntries.length > 0) {
+    const invalidEntriesExist = blacklistEntries.some((e) => !e.isValid);
+
+    const errorMessage = "One or more of your entries is invalid. Check the log for details";
+    entryValidityMessage = invalidEntriesExist ? errorMessage : "All entries valid";
   } else {
     entryValidityMessage = "No entries supplied";
   }
@@ -832,9 +849,9 @@ function main() {
     ],
   );
 
-  const invalidEntriesExist = warnAboutInvalidBlacklistEntries(blacklist);
-
   const blacklistEntries = buildEntries(blacklist);
+
+  warnAboutInvalidBlacklistEntries(blacklistEntries);
 
   const topRank = getTopRank();
 
@@ -852,7 +869,7 @@ function main() {
    * Here we display the summary of what we've filtered at the bottom of the page.
    * Commenting this out won't affect the rest of the functionality of the script.
    */
-  displayResults(blacklist, filterResults, testResults, invalidEntriesExist);
+  displayResults(blacklistEntries, filterResults, testResults);
 }
 
 main();
