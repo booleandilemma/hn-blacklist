@@ -769,14 +769,14 @@ class PageEngineTester {
    * Run all of the tests and print results to the log.
    */
   runTests() {
-    let results = [];
+    const results = [];
 
-    results = results.concat(this.#test_getSubmissionTable_ableToGetSubmissionTable());
-    results = results.concat(this.#test_getSubmissions_numberOfSubmissionsIsCorrect());
-    results = results.concat(this.#test_getRank_ableToGetRank());
-    results = results.concat(this.#test_getSubmitter_ableToGetSubmitter());
-    results = results.concat(this.#test_getTitleInfo_ableToGetTitleInfo());
-    results = results.concat(this.#test_getTitleText_ableToGetTitleText());
+    results.push(this.#test_getSubmissionTable_ableToGetSubmissionTable());
+    results.push(this.#test_getSubmissions_numberOfSubmissionsIsCorrect());
+    results.push(this.#test_getRank_ableToGetRank());
+    results.push(this.#test_getSubmitter_ableToGetSubmitter());
+    results.push(this.#test_getTitleInfo_ableToGetTitleInfo());
+    results.push(this.#test_getTitleText_ableToGetTitleText());
 
     let allTestsPass = true;
     let failCount = 0;
@@ -806,10 +806,10 @@ class PageEngineTester {
   #test_getSubmissionTable_ableToGetSubmissionTable() {
     // Arrange
     const testName = "test_getSubmissionTable_ableToGetSubmissionTable";
-    const results = [];
 
     // Act
     let table;
+
     try {
       table = this.pageEngine.getSubmissionTable();
     } catch {
@@ -817,87 +817,100 @@ class PageEngineTester {
     }
 
     // Assert
-    const result = {
+    if (table == null) {
+      return {
+        name: testName,
+        status: "failed",
+        message: "Unable to obtain submission table",
+      };
+    }
+
+    return {
       name: testName,
       status: "passed",
     };
-
-    if (table == null) {
-      result.status = "failed";
-      result.message = "Unable to obtain submission table";
-    }
-
-    results.push(result);
-
-    return results;
   }
 
   #test_getSubmissions_numberOfSubmissionsIsCorrect() {
     // Arrange
     const testName = "test_getSubmissions_numberOfSubmissionsIsCorrect";
-    const results = [];
 
     const expectedLength = 30;
 
     // Act
-    const submissions = this.pageEngine.getSubmissions();
+    const { submissions, result } = this.#getSubmissionsWithResult(testName);
+
+    if (submissions == null) {
+      return result;
+    }
 
     // Assert
-    const result = {
+
+    if (submissions.length !== expectedLength) {
+      return {
+        name: testName,
+        status: "failed",
+        message: `Submissions length is wrong. expected ${expectedLength}, got ${submissions.length}`,
+      };
+    }
+
+    return {
       name: testName,
       status: "passed",
     };
-
-    if (submissions.length !== expectedLength) {
-      result.status = "failed";
-      result.message = `Submissions length is wrong. expected ${expectedLength}, got ${submissions.length}`;
-    }
-
-    results.push(result);
-
-    return results;
   }
 
   #test_getRank_ableToGetRank() {
     // Arrange
     const testName = "test_getRank_ableToGetRank";
-    const results = [];
 
-    const submissions = this.pageEngine.getSubmissions();
-    const result = {
-      name: testName,
-      status: "passed",
-    };
+    const { submissions, result } = this.#getSubmissionsWithResult(testName);
+
+    if (submissions == null) {
+      return result;
+    }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      result.status = "failed";
-      result.message = "Submissions length less than 5, can't get a rank";
-      results.push(result);
-
-      return results;
+      return {
+        name: testName,
+        status: "failed",
+        message: "Submissions length less than 5, can't get a rank",
+      };
     }
 
     // Act
-    const firstRankOnPage = this.pageEngine.getRank(submissions[0]);
+    let firstRankOnPage = null;
+
+    try {
+      firstRankOnPage = this.pageEngine.getRank(submissions[0]);
+    } catch {
+      // Empty
+    }
 
     // Assert
     if (firstRankOnPage == null) {
-      result.status = "failed";
-      result.message = "First submission rank is null";
-      results.push(result);
-
-      return results;
+      return {
+        name: testName,
+        status: "failed",
+        message: "First submission rank is null",
+      };
     }
 
-    const fifthRank = this.pageEngine.getRank(submissions[4]);
+    let fifthRank = null;
+
+    try {
+      fifthRank = this.pageEngine.getRank(submissions[4]);
+    } catch {
+      // Empty
+    }
 
     if (fifthRank == null) {
-      result.status = "failed";
-      result.message = "Fifth submission rank is null";
-      results.push(result);
-
-      return results;
+      return {
+        name: testName,
+        status: "failed",
+        message: "Fifth submission rank is null",
+      };
     }
 
     /*
@@ -905,67 +918,79 @@ class PageEngineTester {
      * on any submissions page.
      */
     if (fifthRank !== (firstRankOnPage + 4)) {
-      result.status = "failed";
-      result.message = "Unable to obtain submission rank";
+      return {
+        name: testName,
+        status: "failed",
+        message: "Unable to obtain submission rank",
+      };
     }
 
-    results.push(result);
-
-    return results;
+    return {
+      name: testName,
+      status: "passed",
+    };
   }
 
   #test_getSubmitter_ableToGetSubmitter() {
     // Arrange
     const testName = "test_getSubmitter_ableToGetSubmitter";
-    const results = [];
 
-    const submissions = this.pageEngine.getSubmissions();
-    const result = {
-      name: testName,
-      status: "passed",
-    };
+    const { submissions, result } = this.#getSubmissionsWithResult(testName);
+
+    if (submissions == null) {
+      return result;
+    }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      result.status = "failed";
-      result.message = "Submissions length less than 5, can't get a rank";
-      results.push(result);
-
-      return results;
+      return {
+        name: testName,
+        status: "failed",
+        message: "Submissions length less than 5, can't get a rank",
+      };
     }
 
     // Act
-    const submitter = this.pageEngine.getSubmitter(submissions[4]);
+    let submitter = null;
+
+    try {
+      submitter = this.pageEngine.getSubmitter(submissions[4]);
+    } catch {
+      // Empty
+    }
 
     // Assert
     if (submitter == null || submitter.trim() === "") {
-      result.status = "failed";
-      result.message = "Couldn't get submitter";
+      return {
+        name: testName,
+        status: "failed",
+        message: "Couldn't get submitter",
+      };
     }
 
-    results.push(result);
-
-    return results;
+    return {
+      name: testName,
+      status: "passed",
+    };
   }
 
   #test_getTitleInfo_ableToGetTitleInfo() {
     // Arrange
     const testName = "test_getTitleInfo_ableToGetTitleInfo";
-    const results = [];
 
-    const submissions = this.pageEngine.getSubmissions();
-    const result = {
-      name: testName,
-      status: "passed",
-    };
+    const { submissions, result } = this.#getSubmissionsWithResult(testName);
+
+    if (submissions == null) {
+      return result;
+    }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      result.status = "failed";
-      result.message = "Submissions length less than 5, can't get a rank";
-      results.push(result);
-
-      return results;
+      return {
+        name: testName,
+        status: "failed",
+        message: "Submissions length less than 5, can't get a rank",
+      };
     }
 
     // Act
@@ -973,41 +998,46 @@ class PageEngineTester {
 
     // Assert
     if (titleInfo == null) {
-      result.status = "failed";
-      result.message = "Couldn't get title info";
+      return {
+        name: testName,
+        status: "failed",
+        message: "Couldn't get title info",
+      };
     }
 
-    results.push(result);
-
-    return results;
+    return {
+      name: testName,
+      status: "passed",
+    };
   }
 
   #test_getTitleText_ableToGetTitleText() {
     // Arrange
     const testName = "test_getTitleText_ableToGetTitleText";
-    const results = [];
 
-    const submissions = this.pageEngine.getSubmissions();
-    const result = {
-      name: testName,
-      status: "passed",
-    };
+    const { submissions, result } = this.#getSubmissionsWithResult(testName);
+
+    if (submissions == null) {
+      return result;
+    }
 
     // Arbitrarily testing the 5th submission.
     if (submissions.length < 5) {
-      result.status = "failed";
-      result.message = "Submissions length less than 5, can't get a rank";
-      results.push(result);
-
-      return results;
+      return {
+        name: testName,
+        status: "failed",
+        message: "Submissions length less than 5, can't get a rank",
+      };
     }
 
     const titleInfo = this.pageEngine.getTitleInfo(submissions[4]);
 
     if (titleInfo == null) {
-      result.status = "failed";
-      result.message = "Couldn't get title info";
-      return result;
+      return {
+        name: testName,
+        status: "failed",
+        message: "Couldn't get title info",
+      };
     }
 
     // Act
@@ -1015,13 +1045,43 @@ class PageEngineTester {
 
     // Assert
     if (titleText == null || titleText.trim() === "") {
-      result.status = "failed";
-      result.message = "Unable to get title text on title info";
+      return {
+        name: testName,
+        status: "failed",
+        message: "Unable to get title text on title info",
+      };
     }
 
-    results.push(result);
+    return {
+      name: testName,
+      status: "passed",
+    };
+  }
 
-    return results;
+  #getSubmissionsWithResult(testName) {
+    let submissions = null;
+
+    try {
+      submissions = this.pageEngine.getSubmissions();
+    } catch {
+      // Empty
+    }
+
+    if (submissions == null) {
+      return {
+        submissions: null,
+        result: {
+          name: testName,
+          status: "failed",
+          message: "Unable to obtain submission",
+        },
+      };
+    }
+
+    return {
+      submissions,
+      result: null,
+    };
   }
 }
 
