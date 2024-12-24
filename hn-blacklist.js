@@ -846,7 +846,7 @@ class PageEngineTester {
       status: "passed",
     };
 
-    if (submissions.length !== 30) {
+    if (submissions.length !== expectedLength) {
       result.status = "failed";
       result.message = `Submissions length is wrong. expected ${expectedLength}, got ${submissions.length}`;
     }
