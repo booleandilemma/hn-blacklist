@@ -31,6 +31,15 @@ const blacklist = new Set(
 );
 
 /*
+ * By default, HN Blacklist will display a summary
+ * of what it did at the bottom of HN.
+ * But if you're not interested in cluttering your screen,
+ * the results can be hidden by changing
+ * "displayResults" to false.
+ */
+const displayResults = true;
+
+/*
  * If one or more tests fail, it's a good sign that the
  * rest of the script won't work as intended.
  * Therefore, we won't filter anything by default.
@@ -1157,13 +1166,11 @@ function main() {
     filterResults = new FilterResults();
   }
 
-  const timeTaken = performance.now() - startTime;
+  if (displayResults) {
+    const timeTaken = performance.now() - startTime;
 
-  /*
-   * Here we display the summary of what we've filtered at the bottom of the page.
-   * Commenting this out won't affect the rest of the functionality of the script.
-   */
-  blacklister.displayResults(timeTaken, filterResults, testResults);
+    blacklister.displayResults(timeTaken, filterResults, testResults);
+  }
 }
 
 main();
