@@ -51,6 +51,7 @@ const filterEvenWithTestFailures = false;
 /* ========================== Configuration Info Ends Here ========================== */
 
 const UserScriptName = "HN Blacklist";
+const UserScriptVersion = "2.3.1";
 
 /**
  * Logs an info message to the console.
@@ -747,7 +748,9 @@ class Blacklister {
       <tbody>
         <tr>
           <td>
-            <p>HN Blacklist:</p>
+            <p style="text-decoration:underline;">
+              <a href="https://greasyfork.org/en/scripts/427213-hn-blacklist">${UserScriptName} ${UserScriptVersion}</a>
+            </p>
           </td>
         </tr>
         <tr>
