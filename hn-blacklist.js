@@ -597,6 +597,21 @@ class PageEngine {
 
     return submissionsFiltered;
   }
+
+  displayResults(resultsRow) {
+    const mainTable = document.getElementById("hnmain");
+
+    /*
+     * HN adds an extra child to the mainTable,
+     * so we have to do this to get the tbody.
+     * I'm not sure why HN does this.
+     * This assumes the tbody will be the last child.
+     */
+    const childCount = mainTable.childNodes.length;
+    const tbody = mainTable.childNodes[childCount - 1];
+
+    tbody.appendChild(resultsRow);
+  }
 }
 
 /**
@@ -687,25 +702,8 @@ class Blacklister {
     const hnblacklistTable = document.getElementById("hnblacklist");
 
     if (hnblacklistTable != null) {
-      /*
-       * We already displayed the results, so just return.
-       * This check is necessary because when using the
-       * browser back button when coming from another HN page,
-       * there's a chance we'll double-add the results table.
-       */
-      return;
+      hnblacklistTable.remove();
     }
-
-    const mainTable = document.getElementById("hnmain");
-
-    /*
-     * HN adds an extra child to the mainTable,
-     * so we have to do this to get the tbody.
-     * I'm not sure why HN does this.
-     * This assumes the tbody will be the last child.
-     */
-    const childCount = mainTable.childNodes.length;
-    const tbody = mainTable.childNodes[childCount - 1];
 
     const statsRow = document.createElement("tr");
 
@@ -773,7 +771,8 @@ class Blacklister {
     </td>`;
 
     statsRow.innerHTML = stats;
-    tbody.appendChild(statsRow);
+
+    this.pageEngine.displayResults(statsRow);
   }
 }
 
