@@ -782,6 +782,84 @@ class TestResults {
     this.filterEvenWithTestFailures = null;
     this.failCount = null;
     this.testCount = null;
+    this.resultsSummary = null;
+  }
+}
+
+class Tester {
+  constructor() {
+    this.results = [];
+    this.failCount = 0;
+    this.testCount = 0;
+  }
+
+  runTests(testClass) {
+    const tests = this.#getTests(Object.getPrototypeOf(testClass));
+
+    for (let i = 0; i < tests.length; i++) {
+      this.#runTest(testClass, tests[i]);
+    }
+
+    const testResults = new TestResults();
+    testResults.failCount = this.failCount;
+    testResults.testCount = this.testCount;
+    testResults.summary = this.#getSummary();
+
+    return testResults;
+  }
+
+  #getTests(testClass) {
+    return Object.getOwnPropertyNames(testClass).filter(p => p.startsWith("test_"));
+  }
+
+  #runTest(testClass, testToRun) {
+    this.testCount++;
+
+    try {
+      testClass[testToRun](this);
+    } catch (error) {
+      const result = {
+        name: testToRun,
+        status: error.status ?? "failed",
+        message: error.message,
+        stackTrace: error.stack,
+      };
+
+      if (result.status === "failed") {
+        this.failCount++;
+      }
+
+      this.results.push(result);
+
+      return result;
+    }
+
+    const result = {
+      name: testToRun,
+      status: "passed",
+    };
+
+    this.results.push(result);
+
+    return result;
+  }
+
+  failWith(result) {
+    result.status = "failed";
+
+    throw result;
+  }
+
+  #getSummary() {
+    let summary;
+
+    if (this.failCount === 0) {
+      summary = `Tests Results ${this.testCount}/${this.testCount} Passed`;
+    } else {
+      summary = `Tests Results ${this.testCount - this.failCount}/${this.testCount} Passed ${JSON.stringify(this.results, null, 2)}`;
+    }
+
+    return summary;
   }
 }
 
@@ -796,73 +874,13 @@ class PageEngineTester {
     this.pageEngine = pageEngine;
   }
 
-  /**
-   * Run all of the tests and print results to the log.
-   */
-  runTests() {
-    const results = [];
-
-    results.push(this.runTest(this.#test_getSubmissionTable_ableToGetSubmissionTable));
-    results.push(this.runTest(this.#test_getSubmissions_numberOfSubmissionsIsCorrect));
-    results.push(this.runTest(this.#test_getRank_ableToGetRank));
-    results.push(this.runTest(this.#test_getTopRank_ableToGetTopRank));
-    results.push(this.runTest(this.#test_getSubmitter_ableToGetSubmitter));
-    results.push(this.runTest(this.#test_getTitleInfo_ableToGetTitleInfo));
-    results.push(this.runTest(this.#test_getTitleText_ableToGetTitleText));
-    results.push(this.runTest(this.#test_getSource_ableToGetSource));
-
-    let allTestsPass = true;
-    let failCount = 0;
-
-    for (let i = 0; i < results.length; i++) {
-      if (results[i].status === "failed") {
-        allTestsPass = false;
-        failCount++;
-      }
-    }
-
-    const testCount = results.length;
-
-    if (allTestsPass) {
-      logInfo(`Tests Results ${testCount}/${testCount} Passed`);
-    } else {
-      logInfo(`Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)}`);
-    }
-
-    const testResults = new TestResults();
-    testResults.failCount = failCount;
-    testResults.testCount = testCount;
-
-    return testResults;
-  }
-
-  runTest(testToRun) {
-    const testName = testToRun.name.startsWith("#") ? testToRun.name.substring(1) : testToRun.name;
-
-    try {
-      testToRun(this);
-    } catch (error) {
-      return {
-        name: testName,
-        status: error.status ?? "failed",
-        message: error.message,
-        stackTrace: error.stack,
-      };
-    }
-
-    return {
-      name: testName,
-      status: "passed",
-    };
-  }
-
-  #test_getSubmissionTable_ableToGetSubmissionTable(tester) {
+  test_getSubmissionTable_ableToGetSubmissionTable(tester) {
     // Arrange
     // Act
     let table;
 
     try {
-      table = tester.pageEngine.getSubmissionTable();
+      table = this.pageEngine.getSubmissionTable();
     } catch {
       // Empty
     }
@@ -875,12 +893,12 @@ class PageEngineTester {
     }
   }
 
-  #test_getSubmissions_numberOfSubmissionsIsCorrect(tester) {
+  test_getSubmissions_numberOfSubmissionsIsCorrect(tester) {
     // Arrange
     const expectedLength = 30;
 
     // Act
-    const { submissions, result } = tester.getSubmissionsWithResult();
+    const { submissions, result } = this.getSubmissionsWithResult();
 
     // Assert
     if (submissions == null) {
@@ -894,9 +912,9 @@ class PageEngineTester {
     }
   }
 
-  #test_getRank_ableToGetRank(tester) {
+  test_getRank_ableToGetRank(tester) {
     // Arrange
-    const { submissions, result } = tester.getSubmissionsWithResult();
+    const { submissions, result } = this.getSubmissionsWithResult();
 
     if (submissions == null) {
       tester.failWith(result);
@@ -913,7 +931,7 @@ class PageEngineTester {
     let firstRankOnPage = null;
 
     try {
-      firstRankOnPage = tester.pageEngine.getRank(submissions[0]);
+      firstRankOnPage = this.pageEngine.getRank(submissions[0]);
     } catch {
       // Empty
     }
@@ -928,7 +946,7 @@ class PageEngineTester {
     let fifthRank = null;
 
     try {
-      fifthRank = tester.pageEngine.getRank(submissions[4]);
+      fifthRank = this.pageEngine.getRank(submissions[4]);
     } catch {
       // Empty
     }
@@ -950,13 +968,13 @@ class PageEngineTester {
     }
   }
 
-  #test_getTopRank_ableToGetTopRank(tester) {
+  test_getTopRank_ableToGetTopRank(tester) {
     // Arrange
     // Act
     let topRank = null;
 
     try {
-      topRank = tester.pageEngine.getTopRank();
+      topRank = this.pageEngine.getTopRank();
     } catch {
       // Empty
     }
@@ -969,9 +987,9 @@ class PageEngineTester {
     }
   }
 
-  #test_getSubmitter_ableToGetSubmitter(tester) {
+  test_getSubmitter_ableToGetSubmitter(tester) {
     // Arrange
-    const { submissions, result } = tester.getSubmissionsWithResult();
+    const { submissions, result } = this.getSubmissionsWithResult();
 
     if (submissions == null) {
       tester.failWith(result);
@@ -988,7 +1006,7 @@ class PageEngineTester {
     let submitter = null;
 
     try {
-      submitter = tester.pageEngine.getSubmitter(submissions[4]);
+      submitter = this.pageEngine.getSubmitter(submissions[4]);
     } catch {
       // Empty
     }
@@ -1001,9 +1019,9 @@ class PageEngineTester {
     }
   }
 
-  #test_getTitleInfo_ableToGetTitleInfo(tester) {
+  test_getTitleInfo_ableToGetTitleInfo(tester) {
     // Arrange
-    const submissionsAndResult = tester.getSubmissionsWithResult();
+    const submissionsAndResult = this.getSubmissionsWithResult();
     const submissions = submissionsAndResult.submissions;
 
     if (submissions == null) {
@@ -1018,7 +1036,7 @@ class PageEngineTester {
     }
 
     // Act
-    const { titleInfo, result } = tester.getTitleInfoWithResult(submissions[4]);
+    const { titleInfo, result } = this.getTitleInfoWithResult(submissions[4]);
 
     // Assert
     if (titleInfo == null) {
@@ -1026,9 +1044,9 @@ class PageEngineTester {
     }
   }
 
-  #test_getTitleText_ableToGetTitleText(tester) {
+  test_getTitleText_ableToGetTitleText(tester) {
     // Arrange
-    const submissionsAndResult = tester.getSubmissionsWithResult();
+    const submissionsAndResult = this.getSubmissionsWithResult();
     const submissions = submissionsAndResult.submissions;
 
     if (submissions == null) {
@@ -1042,14 +1060,14 @@ class PageEngineTester {
       });
     }
 
-    const { titleInfo, result } = tester.getTitleInfoWithResult(submissions[4]);
+    const { titleInfo, result } = this.getTitleInfoWithResult(submissions[4]);
 
     if (titleInfo == null) {
       tester.failWith(result);
     }
 
     // Act
-    const titleText = tester.pageEngine.getTitleText(titleInfo);
+    const titleText = this.pageEngine.getTitleText(titleInfo);
 
     // Assert
     if (titleText == null || titleText.trim() === "") {
@@ -1059,9 +1077,9 @@ class PageEngineTester {
     }
   }
 
-  #test_getSource_ableToGetSource(tester) {
+  test_getSource_ableToGetSource(tester) {
     // Arrange
-    const submissionsAndResult = tester.getSubmissionsWithResult();
+    const submissionsAndResult = this.getSubmissionsWithResult();
     const submissions = submissionsAndResult.submissions;
 
     if (submissions == null) {
@@ -1075,14 +1093,14 @@ class PageEngineTester {
       });
     }
 
-    const { titleInfo, result } = tester.getTitleInfoWithResult(submissions[4]);
+    const { titleInfo, result } = this.getTitleInfoWithResult(submissions[4]);
 
     if (titleInfo == null) {
       tester.failWith(result);
     }
 
     // Act
-    const source = tester.pageEngine.getSource(titleInfo);
+    const source = this.pageEngine.getSource(titleInfo);
 
     // Assert
     if (source == null || source.trim() === "") {
@@ -1139,21 +1157,18 @@ class PageEngineTester {
       result: null,
     };
   }
-
-  failWith(result) {
-    result.status = "failed";
-
-    throw result;
-  }
 }
 
 function main() {
   const startTime = performance.now();
 
   const pageEngine = new PageEngine();
-  const pageEngineTester = new PageEngineTester(pageEngine);
 
-  const testResults = pageEngineTester.runTests();
+  var tester = new Tester();
+  const pageEngineTester = new PageEngineTester(pageEngine);
+  const testResults = tester.runTests(pageEngineTester);
+
+  logInfo(testResults.summary);
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
