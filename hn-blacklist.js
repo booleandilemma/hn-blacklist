@@ -808,7 +808,7 @@ class Tester {
   }
 
   #getTests(testClass) {
-    return Object.getOwnPropertyNames(testClass).filter(p => p.startsWith("test_"));
+    return Object.getOwnPropertyNames(testClass).filter((p) => p.startsWith("test_"));
   }
 
   #runTest(testClass, testToRun) {
@@ -1163,7 +1163,7 @@ function main() {
 
   const pageEngine = new PageEngine();
 
-  var tester = new Tester();
+  const tester = new Tester();
   const pageEngineTester = new PageEngineTester(pageEngine);
   const testResults = tester.runTests(pageEngineTester);
 
