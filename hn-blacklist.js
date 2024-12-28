@@ -1155,7 +1155,7 @@ class PageEngineTester {
   }
 }
 
-async function getBlacklist(filterText) {
+function getBlacklist(filterText) {
   const blacklist = new Set();
 
   if (filterText == null) {
@@ -1193,7 +1193,7 @@ async function main() {
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
-  const blacklist = await getBlacklist(filterText);
+  const blacklist = getBlacklist(filterText);
 
   const blacklister = new Blacklister(pageEngine, blacklist);
   blacklister.warnAboutInvalidBlacklistEntries();
