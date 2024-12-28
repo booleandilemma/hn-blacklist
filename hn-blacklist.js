@@ -669,7 +669,7 @@ class Blacklister {
     return filterResults;
   }
 
-  async displayUI(testResults, filterEvenWithTestFailures) {
+  async displayUI(testResults, filterText, filterEvenWithTestFailures) {
     const hnBlacklistTable = document.getElementById("hnBlacklist");
 
     if (hnBlacklistTable != null) {
@@ -677,8 +677,6 @@ class Blacklister {
     }
 
     const statsRow = document.createElement("tr");
-
-    const filterText = await GM.getValue("filters");
 
     let testResultsMessage = `Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed.`;
 
@@ -699,7 +697,7 @@ class Blacklister {
           </tr>
           <tr>
             <td>
-              <textarea id="filters" style="width:300px;height:150px">${filterText ?? ""}</textarea>
+              <textarea id="filters" style="width:300px;height:150px">${filterText}</textarea>
             </td>
           </tr>
           <tr>
@@ -1156,16 +1154,14 @@ class PageEngineTester {
   }
 }
 
-async function getBlacklist() {
-  const storedFilters = await GM.getValue("filters");
-
+async function getBlacklist(filterText) {
   const blacklist = new Set();
 
-  if (storedFilters == null) {
+  if (filterText == null) {
     return blacklist;
   }
 
-  const filters = storedFilters.split("\n");
+  const filters = filterText.split("\n");
 
   for (let i = 0; i < filters.length; i++) {
     const filter = filters[i].trim();
@@ -1189,16 +1185,17 @@ async function main() {
 
   logInfo(testResults.summary);
 
+  const filterText = (await GM.getValue("filters")) ?? "";
   const filterEvenWithTestFailures = await GM.getValue("filterEvenWithTestFailures");
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
-  const blacklist = await getBlacklist();
+  const blacklist = await getBlacklist(filterText);
 
   const blacklister = new Blacklister(pageEngine, blacklist);
   blacklister.warnAboutInvalidBlacklistEntries();
 
-  await blacklister.displayUI(testResults, filterEvenWithTestFailures);
+  await blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
 
   let filterResults = null;
 
