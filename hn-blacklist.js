@@ -6,7 +6,8 @@
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
 // @version      2.3.1
-// @grant        none
+// @grant    GM.getValue
+// @grant    GM.setValue
 // @license      GPL-3.0
 // ==/UserScript==
 
@@ -25,19 +26,6 @@
  *
  * For example, "source:example.com" will filter all submissions coming from "example.com".
  */
-const blacklist = new Set(
-  [
-  ],
-);
-
-/*
- * By default, HN Blacklist will display a summary
- * of what it did at the bottom of HN.
- * But if you're not interested in cluttering your screen,
- * the results can be hidden by changing
- * "displayResults" to false.
- */
-const displayResults = true;
 
 /*
  * If one or more tests fail, it's a good sign that the
@@ -692,6 +680,65 @@ class Blacklister {
     return filterResults;
   }
 
+  async displayUI(testResults) {
+    const hnBlacklistTable = document.getElementById("hnBlacklist");
+
+    if (hnBlacklistTable != null) {
+      hnBlacklistTable.remove();
+    }
+
+    const statsRow = document.createElement("tr");
+
+    const filterText = await GM.getValue("filters");
+
+    let testResultsMessage = `Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed.`;
+
+    if (testResults.failCount > 0) {
+      testResultsMessage += " Check the log for details.";
+    }
+
+    const stats = `
+    <td>
+      <table id="hnBlacklist">
+        <tbody>
+          <tr>
+            <td>
+              <p style="text-decoration:underline;">
+                <a href="https://greasyfork.org/en/scripts/427213-hn-blacklist">${UserScriptName} ${UserScriptVersion}</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <textarea id="filters" style="width:300px;height:150px">${filterText ?? ""}</textarea>
+              <button id="btnSaveFilters">Save</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p id="filteredResults"></p>
+            </td>
+          </tr>
+          <tr>
+            <td id="validityResults">Entry Validity: </td>
+          </tr>
+          <tr>
+            <td id="testResults">${testResultsMessage}</td>
+          </tr>
+          <tr>
+            <td id="executionTimeResults">Execution Time: </td>
+          </tr>
+        </tbody>
+        </table>
+      </td>`;
+
+    statsRow.innerHTML = stats;
+
+    this.pageEngine.displayResults(statsRow);
+
+    document.getElementById("btnSaveFilters").onclick = saveFilters;
+  }
+
   /**
    * Displays results to the user.
    * @param {number} timeTaken - The time the script took to execute.
@@ -699,82 +746,44 @@ class Blacklister {
    * @param {TestResults} testResults - A summary of test results.
    */
   displayResults(timeTaken, filterResults, testResults) {
-    const hnblacklistTable = document.getElementById("hnblacklist");
-
-    if (hnblacklistTable != null) {
-      hnblacklistTable.remove();
-    }
-
-    const statsRow = document.createElement("tr");
-
-    let entryValidityMessage;
+    let entryValidityMessage = "Entry Validity: ";
 
     if (this.blacklistEntries.length > 0) {
       const invalidEntriesExist = this.blacklistEntries.some((e) => !e.isValid);
 
       const errorMessage = "One or more of your entries is invalid. Check the log for details";
-      entryValidityMessage = invalidEntriesExist ? errorMessage : "All entries valid";
+      entryValidityMessage += invalidEntriesExist ? errorMessage : "All entries valid";
     } else {
-      entryValidityMessage = "No entries supplied";
+      entryValidityMessage += "No entries supplied";
     }
 
-    let filteredMessage;
+    let filteredMessage = "Filtered: ";
 
     if (testResults.failCount > 0) {
       if (!testResults.filterEvenWithTestFailures) {
-        filteredMessage = "One or more tests failed - did not try to filter";
+        filteredMessage += "One or more tests failed - did not try to filter";
       } else {
-        filteredMessage = `${filterResults.submissionsFilteredBySource} by source, 
-        ${filterResults.submissionsFilteredByTitle} by title, 
-        ${filterResults.submissionsFilteredByUser} by user`;
+        filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
       }
     } else {
-      filteredMessage = `${filterResults.submissionsFilteredBySource} by source, 
-      ${filterResults.submissionsFilteredByTitle} by title, 
-      ${filterResults.submissionsFilteredByUser} by user`;
+      filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
     }
 
-    let testResultsMessage = `${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed.`;
-
-    if (testResults.failCount > 0) {
-      testResultsMessage += " Check the log for details.";
-    }
-
-    const stats = `
-  <td>
-    <table id="hnblacklist">
-      <tbody>
-        <tr>
-          <td>
-            <p style="text-decoration:underline;">
-              <a href="https://greasyfork.org/en/scripts/427213-hn-blacklist">${UserScriptName} ${UserScriptVersion}</a>
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <p>Filtered: ${filteredMessage}.
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td>Entry Validity: ${entryValidityMessage}.</td>
-        </tr>
-        <tr>
-          <td>Test Results: ${testResultsMessage}</td>
-        </tr>
-        <tr>
-          <td>Execution Time: ${timeTaken} ms</td>
-        </tr>
-      </tbody>
-      </table>
-    </td>`;
-
-    statsRow.innerHTML = stats;
-
-    this.pageEngine.displayResults(statsRow);
+    document.getElementById("filteredResults").innerText = filteredMessage;
+    document.getElementById("validityResults").innerText = entryValidityMessage;
+    document.getElementById("executionTimeResults").innerText = `Execution Time: ${timeTaken} ms`;
   }
 }
+
+async function saveFilters() {
+  const filtersElement = document.getElementById("filters");
+
+  const filterText = filtersElement.value.trim();
+
+  await GM.setValue("filters", filterText);
+
+  alert("Filters saved! Please refresh the page.");
+};
 
 class TestResults {
   constructor() {
@@ -1158,7 +1167,29 @@ class PageEngineTester {
   }
 }
 
-function main() {
+async function getBlacklist() {
+  const storedFilters = await GM.getValue("filters");
+
+  const blacklist = new Set();
+
+  if (storedFilters == null) {
+    return blacklist;
+  }
+
+  const filters = storedFilters.split("\n");
+
+  for (let i = 0; i < filters.length; i++) {
+    const filter = filters[i].trim();
+
+    if (filter !== "" && !filter.startsWith("#")) {
+      blacklist.add(filter);
+    }
+  }
+
+  return blacklist;
+}
+
+async function main() {
   const startTime = performance.now();
 
   const pageEngine = new PageEngine();
@@ -1171,9 +1202,12 @@ function main() {
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
-  const blacklister = new Blacklister(pageEngine, blacklist);
+  const blacklist = await getBlacklist();
 
+  const blacklister = new Blacklister(pageEngine, blacklist);
   blacklister.warnAboutInvalidBlacklistEntries();
+
+  await blacklister.displayUI(testResults);
 
   let filterResults = null;
 
@@ -1182,12 +1216,9 @@ function main() {
   } else {
     filterResults = new FilterResults();
   }
+  const timeTaken = performance.now() - startTime;
 
-  if (displayResults) {
-    const timeTaken = performance.now() - startTime;
-
-    blacklister.displayResults(timeTaken, filterResults, testResults);
-  }
+  blacklister.displayResults(timeTaken, filterResults, testResults);
 }
 
 main();
