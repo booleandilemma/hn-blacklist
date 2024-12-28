@@ -61,8 +61,6 @@ As of [release 2.1.0](https://github.com/booleandilemma/hn-blacklist/releases/ta
 
 <img width="263" alt="ui" src="https://github.com/user-attachments/assets/494a7721-5807-4343-a2a5-33568322d9c6" />
 
-This can be hidden by changing the config variable `displayResults` to `false`.
-
 ## Testing
 
 TBD
