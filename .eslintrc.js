@@ -19,6 +19,7 @@ module.exports = {
         'strict': 'off',
         'prefer-destructuring': 'off',
         'no-param-reassign': 'off',
+        'no-alert': 'off'
       }
     }
   ],

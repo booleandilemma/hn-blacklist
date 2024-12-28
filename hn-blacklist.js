@@ -6,8 +6,8 @@
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
 // @version      3.0.0
-// @grant    GM.getValue
-// @grant    GM.setValue
+// @grant        GM.getValue
+// @grant        GM.setValue
 // @license      GPL-3.0
 // ==/UserScript==
 
@@ -63,6 +63,16 @@ function logWarning(message) {
  */
 function logError(message) {
   console.error(`${UserScriptName}: ${message}`);
+}
+
+async function saveFilters() {
+  const filtersElement = document.getElementById("filters");
+
+  const filterText = filtersElement.value.trim();
+
+  await GM.setValue("filters", filterText);
+
+  alert("Filters saved! Please refresh the page.");
 }
 
 /**
@@ -774,16 +784,6 @@ class Blacklister {
     document.getElementById("executionTimeResults").innerText = `Execution Time: ${timeTaken} ms`;
   }
 }
-
-async function saveFilters() {
-  const filtersElement = document.getElementById("filters");
-
-  const filterText = filtersElement.value.trim();
-
-  await GM.setValue("filters", filterText);
-
-  alert("Filters saved! Please refresh the page.");
-};
 
 class TestResults {
   constructor() {
