@@ -18,7 +18,6 @@ module.exports = {
         'max-classes-per-file': 'off',
         'strict': 'off',
         'prefer-destructuring': 'off',
-        'no-param-reassign': 'off',
         'no-alert': 'off'
       }
     }

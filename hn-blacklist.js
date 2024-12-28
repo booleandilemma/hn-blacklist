@@ -841,7 +841,7 @@ class Tester {
   }
 
   failWith(result) {
-    result.status = "failed";
+    result.status = "failed"; // eslint-disable-line no-param-reassign
 
     throw result;
   }
