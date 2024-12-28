@@ -40,7 +40,7 @@ function logError(message) {
   console.error(`${UserScriptName}: ${message}`);
 }
 
-async function saveInputs() {
+async function saveInputsAsync() {
   const filtersElement = document.getElementById("filters");
 
   const filterText = filtersElement.value.trim();
@@ -670,7 +670,7 @@ class Blacklister {
     return filterResults;
   }
 
-  async displayUI(testResults, filterText, filterEvenWithTestFailures) {
+  displayUI(testResults, filterText, filterEvenWithTestFailures) {
     const hnBlacklistTable = document.getElementById("hnBlacklist");
 
     if (hnBlacklistTable != null) {
@@ -734,7 +734,7 @@ class Blacklister {
     this.pageEngine.displayResults(statsRow);
 
     document.getElementById("chkfilterEvenWithTestFailures").checked = filterEvenWithTestFailures;
-    document.getElementById("btnSaveFilters").onclick = saveInputs;
+    document.getElementById("btnSaveFilters").onclick = saveInputsAsync;
   }
 
   /**
@@ -1198,7 +1198,7 @@ async function main() {
   const blacklister = new Blacklister(pageEngine, blacklist);
   blacklister.warnAboutInvalidBlacklistEntries();
 
-  await blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
+  blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
 
   let filterResults = null;
 
