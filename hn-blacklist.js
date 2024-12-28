@@ -45,11 +45,12 @@ async function saveInputs() {
 
   const filterText = filtersElement.value.trim();
 
-  await GM.setValue("filters", filterText);
-
   const chkfilterEvenWithTestFailuresElement = document.getElementById("chkfilterEvenWithTestFailures");
 
+  /* eslint-disable no-undef */
+  await GM.setValue("filters", filterText);
   await GM.setValue("filterEvenWithTestFailures", chkfilterEvenWithTestFailuresElement.checked);
+  /* eslint-enable no-undef */
 
   alert("Filters saved! Please refresh the page.");
 }
@@ -1185,8 +1186,10 @@ async function main() {
 
   logInfo(testResults.summary);
 
+  /* eslint-disable no-undef */
   const filterText = (await GM.getValue("filters")) ?? "";
   const filterEvenWithTestFailures = await GM.getValue("filterEvenWithTestFailures");
+  /* eslint-enable no-undef */
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
