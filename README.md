@@ -13,53 +13,27 @@ Find it on [Greasy Fork](https://greasyfork.org/en/scripts/427213-hn-blacklist),
 
 ## Filtering
 
+HN Blacklist provides a UI at the bottom of HN. You can add entries and see helpful output from HN Blacklist there.
+
 ### By domain:
 
-Simply modify `hn-blacklist.js` - adding the domains of sites you don't want to see articles from:
+Prefix them with "source:", like so:
 
-```
-// Add sources you don't want to see here.
-const blacklist = new Set(
-    [
-        "source:nautil.us",
-        "source:fs.blog"
-    ]
-);
-```
+<img width="293" alt="filter_by_source" src="https://github.com/user-attachments/assets/b4fe8580-05f1-400d-b3c4-ea84551cde37" />
 
 ### By title text:
 
 If you're tired of seeing articles mentioning "ChatGPT", for example, add the following to the blacklist:
 
-```
-// Add sources you don't want to see here.
-const blacklist = new Set(
-    [
-        "title:ChatGPT"
-    ]
-);
-```
+<img width="290" alt="filter_by_title" src="https://github.com/user-attachments/assets/3421def0-76fc-48dc-a1ab-8cb031d22d22" />
 
 All titles containing the string "ChatGPT" will be filtered out. This filtering is case-insensitive.
 
 ### By user:
 
-If you want to filter out submissions by a certain user, prefix your blacklist entry with the string `user:`, followed by the username.
+If you want to filter out submissions by a certain user, prefix your blacklist entry with the string `user:`, followed by the username, like so:
 
-```
-// Add sources you don't want to see here.
-const blacklist = new Set(
-    [
-        "user:booleandilemma"
-    ]
-);
-```
-
-## UI
-
-As of [release 2.1.0](https://github.com/booleandilemma/hn-blacklist/releases/tag/2.1.0), HN Blacklist displays helpful information at the bottom of HN:
-
-<img width="263" alt="ui" src="https://github.com/user-attachments/assets/494a7721-5807-4343-a2a5-33568322d9c6" />
+<img width="287" alt="filter_by_user" src="https://github.com/user-attachments/assets/fe0bb407-3546-4a96-b8af-039b17fd7103" />
 
 ## Testing
 
