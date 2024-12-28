@@ -13,31 +13,6 @@
 
 "use strict";
 
-/* ========================== Configuration Info Starts Here ========================== */
-
-/*
- * Add sources you don't want to see here.
- *
- * Three types of sources can be filtered on:
- *
- * 1) "source:" will filter the submission by the domain it comes from.
- * 2) "title:" will filter the submission by the words contained in the title.
- * 3) "user:" will filter the submission by the user who submitted it.
- *
- * For example, "source:example.com" will filter all submissions coming from "example.com".
- */
-
-/*
- * If one or more tests fail, it's a good sign that the
- * rest of the script won't work as intended.
- * Therefore, we won't filter anything by default.
- * To try filtering anyway, change the variable
- * "filterEvenWithTestFailures" to true.
- */
-const filterEvenWithTestFailures = false;
-
-/* ========================== Configuration Info Ends Here ========================== */
-
 const UserScriptName = "HN Blacklist";
 const UserScriptVersion = "3.0.0";
 
@@ -65,12 +40,16 @@ function logError(message) {
   console.error(`${UserScriptName}: ${message}`);
 }
 
-async function saveFilters() {
+async function saveInputs() {
   const filtersElement = document.getElementById("filters");
 
   const filterText = filtersElement.value.trim();
 
   await GM.setValue("filters", filterText);
+
+  const chkfilterEvenWithTestFailuresElement = document.getElementById("chkfilterEvenWithTestFailures");
+
+  await GM.setValue("filterEvenWithTestFailures", chkfilterEvenWithTestFailuresElement.checked);
 
   alert("Filters saved! Please refresh the page.");
 }
@@ -690,7 +669,7 @@ class Blacklister {
     return filterResults;
   }
 
-  async displayUI(testResults) {
+  async displayUI(testResults, filterEvenWithTestFailures) {
     const hnBlacklistTable = document.getElementById("hnBlacklist");
 
     if (hnBlacklistTable != null) {
@@ -721,6 +700,15 @@ class Blacklister {
           <tr>
             <td>
               <textarea id="filters" style="width:300px;height:150px">${filterText ?? ""}</textarea>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input id="chkfilterEvenWithTestFailures" type="checkbox">Filter even with test failures</input>
+            </td>
+          </tr>
+          <tr>
+            <td>
               <button id="btnSaveFilters">Save</button>
             </td>
           </tr>
@@ -746,7 +734,8 @@ class Blacklister {
 
     this.pageEngine.displayResults(statsRow);
 
-    document.getElementById("btnSaveFilters").onclick = saveFilters;
+    document.getElementById("chkfilterEvenWithTestFailures").checked = filterEvenWithTestFailures;
+    document.getElementById("btnSaveFilters").onclick = saveInputs;
   }
 
   /**
@@ -1200,6 +1189,8 @@ async function main() {
 
   logInfo(testResults.summary);
 
+  const filterEvenWithTestFailures = await GM.getValue("filterEvenWithTestFailures");
+
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
   const blacklist = await getBlacklist();
@@ -1207,7 +1198,7 @@ async function main() {
   const blacklister = new Blacklister(pageEngine, blacklist);
   blacklister.warnAboutInvalidBlacklistEntries();
 
-  await blacklister.displayUI(testResults);
+  await blacklister.displayUI(testResults, filterEvenWithTestFailures);
 
   let filterResults = null;
 
