@@ -717,13 +717,13 @@ class Blacklister {
             </td>
           </tr>
           <tr>
-            <td id="validityResults">Entry Validity: </td>
+            <td id="validityResults"></td>
           </tr>
           <tr>
             <td id="testResults">${testResultsMessage}</td>
           </tr>
           <tr>
-            <td id="executionTimeResults">Execution Time: </td>
+            <td id="executionTimeResults"></td>
           </tr>
         </tbody>
         </table>
