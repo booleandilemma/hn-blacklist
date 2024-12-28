@@ -17,7 +17,7 @@ HN Blacklist provides a UI at the bottom of HN. You can add entries and see help
 
 ### By domain:
 
-Prefix them with "source:", like so:
+Prefix them with `source:`, like so:
 
 <img width="293" alt="filter_by_source" src="https://github.com/user-attachments/assets/b4fe8580-05f1-400d-b3c4-ea84551cde37" />
 
