@@ -13,18 +13,18 @@ export default [
         }
     },
     {
-        files: ['*.js'],
+        files: ["*.js"],
         rules: {
-            'class-methods-use-this': 'off',
-            'no-plusplus': 'off',
-            'no-console': 'off',
-            'linebreak-style': 'off',
-            'quotes': 'off',
-            'camelcase': 'off',
-            'max-classes-per-file': 'off',
-            'strict': 'off',
-            'prefer-destructuring': 'off',
-            'no-alert': 'off'
+            "class-methods-use-this": "off",
+            "no-plusplus": "off",
+            "no-console": "off",
+            "linebreak-style": "off",
+            "quotes": "off",
+            "camelcase": "off",
+            "max-classes-per-file": "off",
+            "strict": "off",
+            "prefer-destructuring": "off",
+            "no-alert": "off"
         }
     },
     eslintConfigPrettier
