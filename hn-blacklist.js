@@ -49,13 +49,11 @@ async function saveInputsAsync() {
     "chkfilterEvenWithTestFailures",
   );
 
-  /* eslint-disable no-undef */
   await GM.setValue("filters", filterText);
   await GM.setValue(
     "filterEvenWithTestFailures",
     chkfilterEvenWithTestFailuresElement.checked,
   );
-  /* eslint-enable no-undef */
 
   alert("Filters saved! Please refresh the page.");
 }
@@ -877,7 +875,7 @@ class Tester {
   }
 
   failWith(result) {
-    result.status = "failed"; // eslint-disable-line no-param-reassign
+    result.status = "failed";
 
     throw result;
   }
@@ -1222,12 +1220,10 @@ async function main() {
 
   logInfo(testResults.summary);
 
-  /* eslint-disable no-undef */
   const filterText = (await GM.getValue("filters")) ?? "";
   const filterEvenWithTestFailures = await GM.getValue(
     "filterEvenWithTestFailures",
   );
-  /* eslint-enable no-undef */
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
