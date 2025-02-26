@@ -45,12 +45,15 @@ async function saveInputsAsync() {
 
   const filterText = filtersElement.value.trim();
 
-  const chkfilterEvenWithTestFailuresElement = document.getElementById("chkfilterEvenWithTestFailures");
+  const chkfilterEvenWithTestFailuresElement = document.getElementById(
+    "chkfilterEvenWithTestFailures",
+  );
 
-  /* eslint-disable no-undef */
   await GM.setValue("filters", filterText);
-  await GM.setValue("filterEvenWithTestFailures", chkfilterEvenWithTestFailuresElement.checked);
-  /* eslint-enable no-undef */
+  await GM.setValue(
+    "filterEvenWithTestFailures",
+    chkfilterEvenWithTestFailuresElement.checked,
+  );
 
   alert("Filters saved! Please refresh the page.");
 }
@@ -96,9 +99,11 @@ class Entry {
    * @returns {boolean} A boole indicating whether or not the entry is valid.
    */
   #isValidInput(input) {
-    if (input.startsWith("source:")
-      || input.startsWith("title:")
-      || input.startsWith("user:")) {
+    if (
+      input.startsWith("source:") ||
+      input.startsWith("title:") ||
+      input.startsWith("user:")
+    ) {
       return true;
     }
 
@@ -153,9 +158,11 @@ class FilterResults {
    * @returns {number} The total number of submissions filtered by all categories.
    */
   getTotalSubmissionsFilteredOut() {
-    return this.submissionsFilteredBySource
-      + this.submissionsFilteredByTitle
-      + this.submissionsFilteredByUser;
+    return (
+      this.submissionsFilteredBySource +
+      this.submissionsFilteredByTitle +
+      this.submissionsFilteredByUser
+    );
   }
 }
 
@@ -287,7 +294,9 @@ class PageEngine {
       return null;
     }
 
-    const source = titleText.substring(lastParenIndex + 1, titleText.length - 1).trim();
+    const source = titleText
+      .substring(lastParenIndex + 1, titleText.length - 1)
+      .trim();
 
     return source;
   }
@@ -473,8 +482,13 @@ class PageEngine {
       for (let i = 0; i < submissions.length; i++) {
         const submissionInfo = this.getSubmissionInfo(submissions[i]);
 
-        if (submissionInfo.source != null && submissionInfo.source === entry.text.toLowerCase()) {
-          logInfo(`Source blacklisted - removing ${JSON.stringify(submissionInfo)}`);
+        if (
+          submissionInfo.source != null &&
+          submissionInfo.source === entry.text.toLowerCase()
+        ) {
+          logInfo(
+            `Source blacklisted - removing ${JSON.stringify(submissionInfo)}`,
+          );
 
           // Delete the submission
           submissionTable.deleteRow(submissionInfo.rowIndex);
@@ -514,8 +528,12 @@ class PageEngine {
       for (let j = 0; j < submissions.length; j++) {
         const submissionInfo = this.getSubmissionInfo(submissions[j]);
 
-        if (submissionInfo.title.toLowerCase().includes(entry.text.toLowerCase())) {
-          logInfo(`Title keyword blacklisted - removing ${JSON.stringify(submissionInfo)}`);
+        if (
+          submissionInfo.title.toLowerCase().includes(entry.text.toLowerCase())
+        ) {
+          logInfo(
+            `Title keyword blacklisted - removing ${JSON.stringify(submissionInfo)}`,
+          );
 
           // Delete the submission
           submissionTable.deleteRow(submissionInfo.rowIndex);
@@ -555,9 +573,13 @@ class PageEngine {
       for (let j = 0; j < submissions.length; j++) {
         const submissionInfo = this.getSubmissionInfo(submissions[j]);
 
-        if (submissionInfo.submitter != null
-          && submissionInfo.submitter.toLowerCase() === entry.text.toLowerCase()) {
-          logInfo(`User blacklisted - removing ${JSON.stringify(submissionInfo)}`);
+        if (
+          submissionInfo.submitter != null &&
+          submissionInfo.submitter.toLowerCase() === entry.text.toLowerCase()
+        ) {
+          logInfo(
+            `User blacklisted - removing ${JSON.stringify(submissionInfo)}`,
+          );
 
           // Delete the submission
           submissionTable.deleteRow(submissionInfo.rowIndex);
@@ -632,8 +654,10 @@ class Blacklister {
   warnAboutInvalidBlacklistEntries() {
     this.blacklistEntries.forEach((entry) => {
       if (!entry.isValid) {
-        logError(`"${entry.text}" is an invalid entry and will be skipped. `
-          + `Entries must begin with "source:", "title:", or "user:".`);
+        logError(
+          `"${entry.text}" is an invalid entry and will be skipped. ` +
+            `Entries must begin with "source:", "title:", or "user:".`,
+        );
       }
     });
   }
@@ -650,9 +674,12 @@ class Blacklister {
 
     const validEntries = this.blacklistEntries.filter((e) => e.isValid);
 
-    const submissionsFilteredBySource = this.pageEngine.filterSubmissionsBySource(validEntries);
-    const submissionsFilteredByTitle = this.pageEngine.filterSubmissionsByTitle(validEntries);
-    const submissionsFilteredByUser = this.pageEngine.filterSubmissionsByUser(validEntries);
+    const submissionsFilteredBySource =
+      this.pageEngine.filterSubmissionsBySource(validEntries);
+    const submissionsFilteredByTitle =
+      this.pageEngine.filterSubmissionsByTitle(validEntries);
+    const submissionsFilteredByUser =
+      this.pageEngine.filterSubmissionsByUser(validEntries);
 
     const filterResults = new FilterResults();
     filterResults.submissionsFilteredBySource = submissionsFilteredBySource;
@@ -733,7 +760,8 @@ class Blacklister {
 
     this.pageEngine.displayResults(statsRow);
 
-    document.getElementById("chkfilterEvenWithTestFailures").checked = filterEvenWithTestFailures;
+    document.getElementById("chkfilterEvenWithTestFailures").checked =
+      filterEvenWithTestFailures;
     document.getElementById("btnSaveFilters").onclick = saveInputsAsync;
   }
 
@@ -749,8 +777,11 @@ class Blacklister {
     if (this.blacklistEntries.length > 0) {
       const invalidEntriesExist = this.blacklistEntries.some((e) => !e.isValid);
 
-      const errorMessage = "One or more of your entries is invalid. Check the log for details";
-      entryValidityMessage += invalidEntriesExist ? errorMessage : "All entries valid";
+      const errorMessage =
+        "One or more of your entries is invalid. Check the log for details";
+      entryValidityMessage += invalidEntriesExist
+        ? errorMessage
+        : "All entries valid";
     } else {
       entryValidityMessage += "No entries supplied";
     }
@@ -769,7 +800,8 @@ class Blacklister {
 
     document.getElementById("filteredResults").innerText = filteredMessage;
     document.getElementById("validityResults").innerText = entryValidityMessage;
-    document.getElementById("executionTimeResults").innerText = `Execution Time: ${timeTaken} ms`;
+    document.getElementById("executionTimeResults").innerText =
+      `Execution Time: ${timeTaken} ms`;
   }
 }
 
@@ -805,7 +837,9 @@ class Tester {
   }
 
   #getTests(testClass) {
-    return Object.getOwnPropertyNames(testClass).filter((p) => p.startsWith("test_"));
+    return Object.getOwnPropertyNames(testClass).filter((p) =>
+      p.startsWith("test_"),
+    );
   }
 
   #runTest(testClass, testToRun) {
@@ -841,7 +875,7 @@ class Tester {
   }
 
   failWith(result) {
-    result.status = "failed"; // eslint-disable-line no-param-reassign
+    result.status = "failed";
 
     throw result;
   }
@@ -957,7 +991,7 @@ class PageEngineTester {
      * We offset the rank like this so that this test will work
      * on any submissions page.
      */
-    if (fifthRank !== (firstRankOnPage + 4)) {
+    if (fifthRank !== firstRankOnPage + 4) {
       tester.failWith({
         message: "Unable to obtain submission rank",
       });
@@ -1186,10 +1220,10 @@ async function main() {
 
   logInfo(testResults.summary);
 
-  /* eslint-disable no-undef */
   const filterText = (await GM.getValue("filters")) ?? "";
-  const filterEvenWithTestFailures = await GM.getValue("filterEvenWithTestFailures");
-  /* eslint-enable no-undef */
+  const filterEvenWithTestFailures = await GM.getValue(
+    "filterEvenWithTestFailures",
+  );
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
