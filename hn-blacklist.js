@@ -836,6 +836,12 @@ class Tester {
     return testResults;
   }
 
+  failWith(result) {
+    result.status = "failed";
+
+    throw result;
+  }
+
   #getTests(testClass) {
     return Object.getOwnPropertyNames(testClass).filter((p) =>
       p.startsWith("test_"),
@@ -872,12 +878,6 @@ class Tester {
     this.results.push(result);
 
     return result;
-  }
-
-  failWith(result) {
-    result.status = "failed";
-
-    throw result;
   }
 
   #getSummary() {
