@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.0.1
+// @version      3.0.2
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
@@ -14,7 +14,7 @@
 "use strict";
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.0.1";
+const UserScriptVersion = "3.0.2";
 
 /**
  * Logs an info message to the console.
