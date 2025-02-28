@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.0.1
+// @version      3.0.2
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
@@ -14,7 +14,7 @@
 "use strict";
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.0.1";
+const UserScriptVersion = "3.0.2";
 
 /**
  * Logs an info message to the console.
@@ -706,7 +706,7 @@ class Blacklister {
 
     const statsRow = document.createElement("tr");
 
-    let testResultsMessage = `Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed.`;
+    let testResultsMessage = `Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed in ${testResults.timeTaken} ms.`;
 
     if (testResults.failCount > 0) {
       testResultsMessage += " Check the log for details.";
@@ -810,30 +810,48 @@ class TestResults {
     this.filterEvenWithTestFailures = null;
     this.failCount = null;
     this.testCount = null;
-    this.resultsSummary = null;
+    this.timeTaken = null;
   }
 }
 
 class Tester {
-  constructor() {
-    this.results = [];
-    this.failCount = 0;
-    this.testCount = 0;
-  }
-
   runTests(testClass) {
     const tests = this.#getTests(Object.getPrototypeOf(testClass));
 
+    let resultsForLogging = [];
+    let failCount = 0;
+
+    const startTime = performance.now();
+
     for (let i = 0; i < tests.length; i++) {
-      this.#runTest(testClass, tests[i]);
+      const testResult = this.#runTest(testClass, tests[i]);
+
+      if (testResult.status !== "passed") {
+        failCount++;
+      }
+
+      resultsForLogging.push(testResult);
     }
 
+    const timeTaken = performance.now() - startTime;
+
     const testResults = new TestResults();
-    testResults.failCount = this.failCount;
-    testResults.testCount = this.testCount;
-    testResults.summary = this.#getSummary();
+    testResults.failCount = failCount;
+    testResults.testCount = tests.length;
+    testResults.timeTaken = timeTaken;
+    testResults.summaryForLogging = this.#getSummaryForLogging(
+      resultsForLogging,
+      failCount,
+      timeTaken,
+    );
 
     return testResults;
+  }
+
+  failWith(result) {
+    result.status = "failed";
+
+    throw result;
   }
 
   #getTests(testClass) {
@@ -843,8 +861,6 @@ class Tester {
   }
 
   #runTest(testClass, testToRun) {
-    this.testCount++;
-
     try {
       testClass[testToRun](this);
     } catch (error) {
@@ -855,12 +871,6 @@ class Tester {
         stackTrace: error.stack,
       };
 
-      if (result.status === "failed") {
-        this.failCount++;
-      }
-
-      this.results.push(result);
-
       return result;
     }
 
@@ -869,24 +879,18 @@ class Tester {
       status: "passed",
     };
 
-    this.results.push(result);
-
     return result;
   }
 
-  failWith(result) {
-    result.status = "failed";
+  #getSummaryForLogging(results, failCount, timeTaken) {
+    const testCount = results.length;
 
-    throw result;
-  }
-
-  #getSummary() {
     let summary;
 
-    if (this.failCount === 0) {
-      summary = `Tests Results ${this.testCount}/${this.testCount} Passed`;
+    if (failCount === 0) {
+      summary = `Tests Results ${testCount}/${testCount} Passed in ${timeTaken} ms`;
     } else {
-      summary = `Tests Results ${this.testCount - this.failCount}/${this.testCount} Passed ${JSON.stringify(this.results, null, 2)}`;
+      summary = `Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)} in ${timeTaken} ms`;
     }
 
     return summary;
@@ -1218,7 +1222,7 @@ async function main() {
   const pageEngineTester = new PageEngineTester(pageEngine);
   const testResults = tester.runTests(pageEngineTester);
 
-  logInfo(testResults.summary);
+  logInfo(testResults.summaryForLogging);
 
   const filterText = (await GM.getValue("filters")) ?? "";
   const filterEvenWithTestFailures = await GM.getValue(
