@@ -706,7 +706,7 @@ class Blacklister {
 
     const statsRow = document.createElement("tr");
 
-    let testResultsMessage = `Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed.`;
+    let testResultsMessage = `Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed in ${testResults.timeTaken} ms.`;
 
     if (testResults.failCount > 0) {
       testResultsMessage += " Check the log for details.";
@@ -810,6 +810,7 @@ class TestResults {
     this.filterEvenWithTestFailures = null;
     this.failCount = null;
     this.testCount = null;
+    this.timeTaken = null;
   }
 }
 
@@ -819,6 +820,8 @@ class Tester {
 
     let resultsForLogging = [];
     let failCount = 0;
+
+    const startTime = performance.now();
 
     for (let i = 0; i < tests.length; i++) {
       const testResult = this.#runTest(testClass, tests[i]);
@@ -830,12 +833,16 @@ class Tester {
       resultsForLogging.push(testResult);
     }
 
+    const timeTaken = performance.now() - startTime;
+
     const testResults = new TestResults();
     testResults.failCount = failCount;
     testResults.testCount = tests.length;
+    testResults.timeTaken = timeTaken;
     testResults.summaryForLogging = this.#getSummaryForLogging(
       resultsForLogging,
       failCount,
+      timeTaken,
     );
 
     return testResults;
@@ -875,15 +882,15 @@ class Tester {
     return result;
   }
 
-  #getSummaryForLogging(results, failCount) {
+  #getSummaryForLogging(results, failCount, timeTaken) {
     const testCount = results.length;
 
     let summary;
 
     if (failCount === 0) {
-      summary = `Tests Results ${testCount}/${testCount} Passed`;
+      summary = `Tests Results ${testCount}/${testCount} Passed in ${timeTaken} ms`;
     } else {
-      summary = `Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)}`;
+      summary = `Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)} in ${timeTaken} ms`;
     }
 
     return summary;
