@@ -810,28 +810,33 @@ class TestResults {
     this.filterEvenWithTestFailures = null;
     this.failCount = null;
     this.testCount = null;
-    this.resultsSummary = null;
   }
 }
 
 class Tester {
-  constructor() {
-    this.results = [];
-    this.failCount = 0;
-    this.testCount = 0;
-  }
-
   runTests(testClass) {
     const tests = this.#getTests(Object.getPrototypeOf(testClass));
 
+    let resultsForLogging = [];
+    let failCount = 0;
+
     for (let i = 0; i < tests.length; i++) {
-      this.#runTest(testClass, tests[i]);
+      const testResult = this.#runTest(testClass, tests[i]);
+
+      if (testResult.status !== "passed") {
+        failCount++;
+      }
+
+      resultsForLogging.push(testResult);
     }
 
     const testResults = new TestResults();
-    testResults.failCount = this.failCount;
-    testResults.testCount = this.testCount;
-    testResults.summary = this.#getSummary();
+    testResults.failCount = failCount;
+    testResults.testCount = tests.length;
+    testResults.summaryForLogging = this.#getSummaryForLogging(
+      resultsForLogging,
+      failCount,
+    );
 
     return testResults;
   }
@@ -849,8 +854,6 @@ class Tester {
   }
 
   #runTest(testClass, testToRun) {
-    this.testCount++;
-
     try {
       testClass[testToRun](this);
     } catch (error) {
@@ -861,12 +864,6 @@ class Tester {
         stackTrace: error.stack,
       };
 
-      if (result.status === "failed") {
-        this.failCount++;
-      }
-
-      this.results.push(result);
-
       return result;
     }
 
@@ -875,18 +872,18 @@ class Tester {
       status: "passed",
     };
 
-    this.results.push(result);
-
     return result;
   }
 
-  #getSummary() {
+  #getSummaryForLogging(results, failCount) {
+    const testCount = results.length;
+
     let summary;
 
-    if (this.failCount === 0) {
-      summary = `Tests Results ${this.testCount}/${this.testCount} Passed`;
+    if (failCount === 0) {
+      summary = `Tests Results ${testCount}/${testCount} Passed`;
     } else {
-      summary = `Tests Results ${this.testCount - this.failCount}/${this.testCount} Passed ${JSON.stringify(this.results, null, 2)}`;
+      summary = `Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)}`;
     }
 
     return summary;
@@ -1218,7 +1215,7 @@ async function main() {
   const pageEngineTester = new PageEngineTester(pageEngine);
   const testResults = tester.runTests(pageEngineTester);
 
-  logInfo(testResults.summary);
+  logInfo(testResults.summaryForLogging);
 
   const filterText = (await GM.getValue("filters")) ?? "";
   const filterEvenWithTestFailures = await GM.getValue(
