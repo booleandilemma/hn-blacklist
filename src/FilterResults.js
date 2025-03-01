@@ -37,4 +37,5 @@ class FilterResults {
     );
   }
 }
+
 export default FilterResults;
