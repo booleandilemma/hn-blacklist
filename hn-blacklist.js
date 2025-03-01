@@ -1249,3 +1249,5 @@ class TestResults {
     this.timeTaken = null;
   }
 }
+
+main();

@@ -17,6 +17,10 @@ for (const file of files) {
   finalOutput += getFileContent(`src/${file}`);
 }
 
+finalOutput += "\n";
+finalOutput += "main();\n";
+finalOutput += "\n";
+
 fs.writeFileSync("hn-blacklist.js", finalOutput);
 
 function getFileContent(file) {
