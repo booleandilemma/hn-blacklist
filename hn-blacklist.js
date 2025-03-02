@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.0.2
+// @version      3.0.3
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
@@ -14,7 +14,7 @@
 "use strict";
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.0.2";
+const UserScriptVersion = "3.0.3";
 
 /**
  * Logs an info message to the console.
@@ -56,6 +56,255 @@ async function saveInputsAsync() {
   );
 
   alert("Filters saved! Please refresh the page.");
+}
+
+function getBlacklist(filterText) {
+  const blacklist = new Set();
+
+  if (filterText == null) {
+    return blacklist;
+  }
+
+  const filters = filterText.split("\n");
+
+  for (let i = 0; i < filters.length; i++) {
+    const filter = filters[i].trim();
+
+    if (filter !== "" && !filter.startsWith("#")) {
+      blacklist.add(filter);
+    }
+  }
+
+  return blacklist;
+}
+
+async function main() {
+  const startTime = performance.now();
+
+  const pageEngine = new PageEngine();
+
+  const tester = new Tester();
+  const pageEngineTester = new PageEngineTests(pageEngine);
+  const testResults = tester.runTests(pageEngineTester);
+
+  logInfo(testResults.summaryForLogging);
+
+  const filterText = (await GM.getValue("filters")) ?? "";
+  const filterEvenWithTestFailures = await GM.getValue(
+    "filterEvenWithTestFailures",
+  );
+
+  testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
+
+  const blacklist = getBlacklist(filterText);
+
+  const blacklister = new Blacklister(pageEngine, blacklist);
+  blacklister.warnAboutInvalidBlacklistEntries();
+
+  blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
+
+  let filterResults = null;
+
+  if (filterEvenWithTestFailures || testResults.failCount === 0) {
+    filterResults = blacklister.filterSubmissions();
+  } else {
+    filterResults = new FilterResults();
+  }
+
+  const timeTaken = performance.now() - startTime;
+
+  blacklister.displayResults(timeTaken, filterResults, testResults);
+}
+
+/**
+ * This defines an object for orchestrating the high-level filtering logic.
+ * It also handles user input and displaying results.
+ */
+class Blacklister {
+  /**
+   * Builds a list of entries from user input.
+   * @param {PageEngine} pageEngine -
+   * The page engine is responsible for low-level interaction with HN.
+   * @param {set} blacklistInput - A set containing the things to filter on.
+   */
+  constructor(pageEngine, blacklistInput) {
+    this.pageEngine = pageEngine;
+    this.blacklistEntries = this.buildEntries(blacklistInput);
+  }
+
+  /**
+   * Builds a list of entries from user input.
+   * @param {set} blacklistInput - A set containing the things to filter on.
+   * @returns {Entry[]} An array of entries.
+   */
+  buildEntries(blacklistInput) {
+    const entries = [];
+
+    blacklistInput.forEach((input) => {
+      if (input != null) {
+        entries.push(new Entry(input));
+      }
+    });
+
+    return entries;
+  }
+
+  /**
+   * Warns the user about invalid entries.
+   * @param {Entry[]} blacklistEntries - A list of entries containing the submissions to filter out.
+   */
+  warnAboutInvalidBlacklistEntries() {
+    this.blacklistEntries.forEach((entry) => {
+      if (!entry.isValid) {
+        logError(
+          `"${entry.text}" is an invalid entry and will be skipped. ` +
+            `Entries must begin with "source:", "title:", or "user:".`,
+        );
+      }
+    });
+  }
+
+  /**
+   * Filters out (i.e. deletes) all submissions on the
+   * current HN page matching one or more provided entries.
+   * After filtering is performed, the page is reindexed.
+   * See the reindexSubmissions function of PageEngine for details.
+   * @returns {FilterResults} An object containing how many submissions were filtered out.
+   */
+  filterSubmissions() {
+    const topRank = this.pageEngine.getTopRank();
+
+    const validEntries = this.blacklistEntries.filter((e) => e.isValid);
+
+    const submissionsFilteredBySource =
+      this.pageEngine.filterSubmissionsBySource(validEntries);
+    const submissionsFilteredByTitle =
+      this.pageEngine.filterSubmissionsByTitle(validEntries);
+    const submissionsFilteredByUser =
+      this.pageEngine.filterSubmissionsByUser(validEntries);
+
+    const filterResults = new FilterResults();
+    filterResults.submissionsFilteredBySource = submissionsFilteredBySource;
+    filterResults.submissionsFilteredByTitle = submissionsFilteredByTitle;
+    filterResults.submissionsFilteredByUser = submissionsFilteredByUser;
+
+    if (filterResults.getTotalSubmissionsFilteredOut() > 0) {
+      logInfo("Reindexing submissions");
+
+      this.pageEngine.reindexSubmissions(topRank);
+    } else {
+      logInfo("Nothing filtered");
+    }
+
+    return filterResults;
+  }
+
+  displayUI(testResults, filterText, filterEvenWithTestFailures) {
+    const hnBlacklistTable = document.getElementById("hnBlacklist");
+
+    if (hnBlacklistTable != null) {
+      hnBlacklistTable.remove();
+    }
+
+    const statsRow = document.createElement("tr");
+
+    let testResultsMessage = `Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed in ${testResults.timeTaken} ms.`;
+
+    if (testResults.failCount > 0) {
+      testResultsMessage += " Check the log for details.";
+    }
+
+    const stats = `
+      <td>
+        <table id="hnBlacklist">
+          <tbody>
+            <tr>
+              <td>
+                <p style="text-decoration:underline;">
+                  <a href="https://greasyfork.org/en/scripts/427213-hn-blacklist">${UserScriptName} ${UserScriptVersion}</a>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <textarea id="filters" style="width:300px;height:150px">${filterText}</textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input id="chkfilterEvenWithTestFailures" type="checkbox">Filter even with test failures</input>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <button id="btnSaveFilters">Save</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <p id="filteredResults"></p>
+              </td>
+            </tr>
+            <tr>
+              <td id="validityResults"></td>
+            </tr>
+            <tr>
+              <td id="testResults">${testResultsMessage}</td>
+            </tr>
+            <tr>
+              <td id="executionTimeResults"></td>
+            </tr>
+          </tbody>
+          </table>
+        </td>`;
+
+    statsRow.innerHTML = stats;
+
+    this.pageEngine.displayResults(statsRow);
+
+    document.getElementById("chkfilterEvenWithTestFailures").checked =
+      filterEvenWithTestFailures;
+    document.getElementById("btnSaveFilters").onclick = saveInputsAsync;
+  }
+
+  /**
+   * Displays results to the user.
+   * @param {number} timeTaken - The time the script took to execute.
+   * @param {FilterResults} filterResults - High-level results of what was done.
+   * @param {TestResults} testResults - A summary of test results.
+   */
+  displayResults(timeTaken, filterResults, testResults) {
+    let entryValidityMessage = "Entry Validity: ";
+
+    if (this.blacklistEntries.length > 0) {
+      const invalidEntriesExist = this.blacklistEntries.some((e) => !e.isValid);
+
+      const errorMessage =
+        "One or more of your entries is invalid. Check the log for details";
+      entryValidityMessage += invalidEntriesExist
+        ? errorMessage
+        : "All entries valid";
+    } else {
+      entryValidityMessage += "No entries supplied";
+    }
+
+    let filteredMessage = "Filtered: ";
+
+    if (testResults.failCount > 0) {
+      if (!testResults.filterEvenWithTestFailures) {
+        filteredMessage += "One or more tests failed - did not try to filter";
+      } else {
+        filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+      }
+    } else {
+      filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+    }
+
+    document.getElementById("filteredResults").innerText = filteredMessage;
+    document.getElementById("validityResults").innerText = entryValidityMessage;
+    document.getElementById("executionTimeResults").innerText =
+      `Execution Time: ${timeTaken} ms`;
+  }
 }
 
 /**
@@ -615,295 +864,12 @@ class PageEngine {
 }
 
 /**
- * This defines an object for orchestrating the high-level filtering logic.
- * It also handles user input and displaying results.
- */
-class Blacklister {
-  /**
-   * Builds a list of entries from user input.
-   * @param {PageEngine} pageEngine -
-   * The page engine is responsible for low-level interaction with HN.
-   * @param {set} blacklistInput - A set containing the things to filter on.
-   */
-  constructor(pageEngine, blacklistInput) {
-    this.pageEngine = pageEngine;
-    this.blacklistEntries = this.buildEntries(blacklistInput);
-  }
-
-  /**
-   * Builds a list of entries from user input.
-   * @param {set} blacklistInput - A set containing the things to filter on.
-   * @returns {Entry[]} An array of entries.
-   */
-  buildEntries(blacklistInput) {
-    const entries = [];
-
-    blacklistInput.forEach((input) => {
-      if (input != null) {
-        entries.push(new Entry(input));
-      }
-    });
-
-    return entries;
-  }
-
-  /**
-   * Warns the user about invalid entries.
-   * @param {Entry[]} blacklistEntries - A list of entries containing the submissions to filter out.
-   */
-  warnAboutInvalidBlacklistEntries() {
-    this.blacklistEntries.forEach((entry) => {
-      if (!entry.isValid) {
-        logError(
-          `"${entry.text}" is an invalid entry and will be skipped. ` +
-            `Entries must begin with "source:", "title:", or "user:".`,
-        );
-      }
-    });
-  }
-
-  /**
-   * Filters out (i.e. deletes) all submissions on the
-   * current HN page matching one or more provided entries.
-   * After filtering is performed, the page is reindexed.
-   * See the reindexSubmissions function of PageEngine for details.
-   * @returns {FilterResults} An object containing how many submissions were filtered out.
-   */
-  filterSubmissions() {
-    const topRank = this.pageEngine.getTopRank();
-
-    const validEntries = this.blacklistEntries.filter((e) => e.isValid);
-
-    const submissionsFilteredBySource =
-      this.pageEngine.filterSubmissionsBySource(validEntries);
-    const submissionsFilteredByTitle =
-      this.pageEngine.filterSubmissionsByTitle(validEntries);
-    const submissionsFilteredByUser =
-      this.pageEngine.filterSubmissionsByUser(validEntries);
-
-    const filterResults = new FilterResults();
-    filterResults.submissionsFilteredBySource = submissionsFilteredBySource;
-    filterResults.submissionsFilteredByTitle = submissionsFilteredByTitle;
-    filterResults.submissionsFilteredByUser = submissionsFilteredByUser;
-
-    if (filterResults.getTotalSubmissionsFilteredOut() > 0) {
-      logInfo("Reindexing submissions");
-
-      this.pageEngine.reindexSubmissions(topRank);
-    } else {
-      logInfo("Nothing filtered");
-    }
-
-    return filterResults;
-  }
-
-  displayUI(testResults, filterText, filterEvenWithTestFailures) {
-    const hnBlacklistTable = document.getElementById("hnBlacklist");
-
-    if (hnBlacklistTable != null) {
-      hnBlacklistTable.remove();
-    }
-
-    const statsRow = document.createElement("tr");
-
-    let testResultsMessage = `Test Results: ${testResults.testCount - testResults.failCount}/${testResults.testCount} Passed in ${testResults.timeTaken} ms.`;
-
-    if (testResults.failCount > 0) {
-      testResultsMessage += " Check the log for details.";
-    }
-
-    const stats = `
-    <td>
-      <table id="hnBlacklist">
-        <tbody>
-          <tr>
-            <td>
-              <p style="text-decoration:underline;">
-                <a href="https://greasyfork.org/en/scripts/427213-hn-blacklist">${UserScriptName} ${UserScriptVersion}</a>
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <textarea id="filters" style="width:300px;height:150px">${filterText}</textarea>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <input id="chkfilterEvenWithTestFailures" type="checkbox">Filter even with test failures</input>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <button id="btnSaveFilters">Save</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p id="filteredResults"></p>
-            </td>
-          </tr>
-          <tr>
-            <td id="validityResults"></td>
-          </tr>
-          <tr>
-            <td id="testResults">${testResultsMessage}</td>
-          </tr>
-          <tr>
-            <td id="executionTimeResults"></td>
-          </tr>
-        </tbody>
-        </table>
-      </td>`;
-
-    statsRow.innerHTML = stats;
-
-    this.pageEngine.displayResults(statsRow);
-
-    document.getElementById("chkfilterEvenWithTestFailures").checked =
-      filterEvenWithTestFailures;
-    document.getElementById("btnSaveFilters").onclick = saveInputsAsync;
-  }
-
-  /**
-   * Displays results to the user.
-   * @param {number} timeTaken - The time the script took to execute.
-   * @param {FilterResults} filterResults - High-level results of what was done.
-   * @param {TestResults} testResults - A summary of test results.
-   */
-  displayResults(timeTaken, filterResults, testResults) {
-    let entryValidityMessage = "Entry Validity: ";
-
-    if (this.blacklistEntries.length > 0) {
-      const invalidEntriesExist = this.blacklistEntries.some((e) => !e.isValid);
-
-      const errorMessage =
-        "One or more of your entries is invalid. Check the log for details";
-      entryValidityMessage += invalidEntriesExist
-        ? errorMessage
-        : "All entries valid";
-    } else {
-      entryValidityMessage += "No entries supplied";
-    }
-
-    let filteredMessage = "Filtered: ";
-
-    if (testResults.failCount > 0) {
-      if (!testResults.filterEvenWithTestFailures) {
-        filteredMessage += "One or more tests failed - did not try to filter";
-      } else {
-        filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
-      }
-    } else {
-      filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
-    }
-
-    document.getElementById("filteredResults").innerText = filteredMessage;
-    document.getElementById("validityResults").innerText = entryValidityMessage;
-    document.getElementById("executionTimeResults").innerText =
-      `Execution Time: ${timeTaken} ms`;
-  }
-}
-
-class TestResults {
-  constructor() {
-    this.filterEvenWithTestFailures = null;
-    this.failCount = null;
-    this.testCount = null;
-    this.timeTaken = null;
-  }
-}
-
-class Tester {
-  runTests(testClass) {
-    const tests = this.#getTests(Object.getPrototypeOf(testClass));
-
-    let resultsForLogging = [];
-    let failCount = 0;
-
-    const startTime = performance.now();
-
-    for (let i = 0; i < tests.length; i++) {
-      const testResult = this.#runTest(testClass, tests[i]);
-
-      if (testResult.status !== "passed") {
-        failCount++;
-      }
-
-      resultsForLogging.push(testResult);
-    }
-
-    const timeTaken = performance.now() - startTime;
-
-    const testResults = new TestResults();
-    testResults.failCount = failCount;
-    testResults.testCount = tests.length;
-    testResults.timeTaken = timeTaken;
-    testResults.summaryForLogging = this.#getSummaryForLogging(
-      resultsForLogging,
-      failCount,
-      timeTaken,
-    );
-
-    return testResults;
-  }
-
-  failWith(result) {
-    result.status = "failed";
-
-    throw result;
-  }
-
-  #getTests(testClass) {
-    return Object.getOwnPropertyNames(testClass).filter((p) =>
-      p.startsWith("test_"),
-    );
-  }
-
-  #runTest(testClass, testToRun) {
-    try {
-      testClass[testToRun](this);
-    } catch (error) {
-      const result = {
-        name: testToRun,
-        status: error.status ?? "failed",
-        message: error.message,
-        stackTrace: error.stack,
-      };
-
-      return result;
-    }
-
-    const result = {
-      name: testToRun,
-      status: "passed",
-    };
-
-    return result;
-  }
-
-  #getSummaryForLogging(results, failCount, timeTaken) {
-    const testCount = results.length;
-
-    let summary;
-
-    if (failCount === 0) {
-      summary = `Tests Results ${testCount}/${testCount} Passed in ${timeTaken} ms`;
-    } else {
-      summary = `Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)} in ${timeTaken} ms`;
-    }
-
-    return summary;
-  }
-}
-
-/**
  * This class contains several tests for testing the correctness of the PageEngine.
  * As the PageEngine is the closest code in this userscript to HN,
  * it's most susceptible to breaking if the HN developers change something.
  * Therefore, it's good to have tests for all of its functionality.
  */
-class PageEngineTester {
+class PageEngineTests {
   constructor(pageEngine) {
     this.pageEngine = pageEngine;
   }
@@ -1193,61 +1159,95 @@ class PageEngineTester {
   }
 }
 
-function getBlacklist(filterText) {
-  const blacklist = new Set();
+class Tester {
+  runTests(testClass) {
+    const tests = this.#getTests(Object.getPrototypeOf(testClass));
 
-  if (filterText == null) {
-    return blacklist;
-  }
+    let resultsForLogging = [];
+    let failCount = 0;
 
-  const filters = filterText.split("\n");
+    const startTime = performance.now();
 
-  for (let i = 0; i < filters.length; i++) {
-    const filter = filters[i].trim();
+    for (let i = 0; i < tests.length; i++) {
+      const testResult = this.#runTest(testClass, tests[i]);
 
-    if (filter !== "" && !filter.startsWith("#")) {
-      blacklist.add(filter);
+      if (testResult.status !== "passed") {
+        failCount++;
+      }
+
+      resultsForLogging.push(testResult);
     }
+
+    const timeTaken = performance.now() - startTime;
+
+    const testResults = new TestResults();
+    testResults.failCount = failCount;
+    testResults.testCount = tests.length;
+    testResults.timeTaken = timeTaken;
+    testResults.summaryForLogging = this.#getSummaryForLogging(
+      resultsForLogging,
+      failCount,
+      timeTaken,
+    );
+
+    return testResults;
   }
 
-  return blacklist;
+  failWith(result) {
+    result.status = "failed";
+
+    throw result;
+  }
+
+  #getTests(testClass) {
+    return Object.getOwnPropertyNames(testClass).filter((p) =>
+      p.startsWith("test_"),
+    );
+  }
+
+  #runTest(testClass, testToRun) {
+    try {
+      testClass[testToRun](this);
+    } catch (error) {
+      const result = {
+        name: testToRun,
+        status: error.status ?? "failed",
+        message: error.message,
+        stackTrace: error.stack,
+      };
+
+      return result;
+    }
+
+    const result = {
+      name: testToRun,
+      status: "passed",
+    };
+
+    return result;
+  }
+
+  #getSummaryForLogging(results, failCount, timeTaken) {
+    const testCount = results.length;
+
+    let summary;
+
+    if (failCount === 0) {
+      summary = `Tests Results ${testCount}/${testCount} Passed in ${timeTaken} ms`;
+    } else {
+      summary = `Tests Results ${testCount - failCount}/${testCount} Passed ${JSON.stringify(results, null, 2)} in ${timeTaken} ms`;
+    }
+
+    return summary;
+  }
 }
-
-async function main() {
-  const startTime = performance.now();
-
-  const pageEngine = new PageEngine();
-
-  const tester = new Tester();
-  const pageEngineTester = new PageEngineTester(pageEngine);
-  const testResults = tester.runTests(pageEngineTester);
-
-  logInfo(testResults.summaryForLogging);
-
-  const filterText = (await GM.getValue("filters")) ?? "";
-  const filterEvenWithTestFailures = await GM.getValue(
-    "filterEvenWithTestFailures",
-  );
-
-  testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
-
-  const blacklist = getBlacklist(filterText);
-
-  const blacklister = new Blacklister(pageEngine, blacklist);
-  blacklister.warnAboutInvalidBlacklistEntries();
-
-  blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
-
-  let filterResults = null;
-
-  if (filterEvenWithTestFailures || testResults.failCount === 0) {
-    filterResults = blacklister.filterSubmissions();
-  } else {
-    filterResults = new FilterResults();
+class TestResults {
+  constructor() {
+    this.filterEvenWithTestFailures = null;
+    this.failCount = null;
+    this.testCount = null;
+    this.timeTaken = null;
   }
-  const timeTaken = performance.now() - startTime;
-
-  blacklister.displayResults(timeTaken, filterResults, testResults);
 }
 
 main();
