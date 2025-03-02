@@ -1241,6 +1241,7 @@ class Tester {
     return summary;
   }
 }
+
 class TestResults {
   constructor() {
     this.filterEvenWithTestFailures = null;
