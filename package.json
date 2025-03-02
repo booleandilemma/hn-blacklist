@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "node builder.js",
-    "format": "prettier --write src/**/*.js && prettier --write *.js",
-    "lint": "eslint src/**/*.js && eslint *.js",
-    "lint-fix": "eslint --fix hn-blacklist.js && eslint --fix *.js",
+    "format": "prettier --write src/**/*.js && prettier --write builder.js && prettier --write hn-blacklist.js",
+    "lint": "eslint src/**/*.js && eslint builder.js && eslint hn-blacklist.js",
+    "lint-fix": "eslint --fix src/**/*.js && eslint --fix builder.js && eslint --fix hn-blacklist.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
