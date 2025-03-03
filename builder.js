@@ -2,7 +2,7 @@ import * as fs from "fs";
 
 let finalOutput = "";
 
-let mainContent = getFileContent("src/Main.js");
+let mainContent = getFileContent("src/main.js");
 mainContent = insertUseStrict(mainContent);
 
 finalOutput += mainContent;
@@ -10,7 +10,7 @@ finalOutput += mainContent;
 const files = fs
   .readdirSync("src", { recursive: true })
   .filter((f) => f.endsWith(".js"))
-  .filter((f) => f !== "Main.js")
+  .filter((f) => f !== "main.js")
   .sort();
 
 for (const file of files) {
