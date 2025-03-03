@@ -9,9 +9,10 @@ class Blacklister {
    * The page engine is responsible for low-level interaction with HN.
    * @param {set} blacklistInput - A set containing the things to filter on.
    */
-  constructor(pageEngine, blacklistInput) {
+  constructor(pageEngine, blacklistInput, logger) {
     this.pageEngine = pageEngine;
     this.blacklistEntries = this.buildEntries(blacklistInput);
+    this.logger = logger;
   }
 
   /**
@@ -38,7 +39,7 @@ class Blacklister {
   warnAboutInvalidBlacklistEntries() {
     this.blacklistEntries.forEach((entry) => {
       if (!entry.isValid) {
-        logError(
+        this.logger.logError(
           `"${entry.text}" is an invalid entry and will be skipped. ` +
             `Entries must begin with "source:", "title:", or "user:".`,
         );
@@ -71,11 +72,11 @@ class Blacklister {
     filterResults.submissionsFilteredByUser = submissionsFilteredByUser;
 
     if (filterResults.getTotalSubmissionsFilteredOut() > 0) {
-      logInfo("Reindexing submissions");
+      this.logger.logInfo("Reindexing submissions");
 
       this.pageEngine.reindexSubmissions(topRank);
     } else {
-      logInfo("Nothing filtered");
+      this.logger.logInfo("Nothing filtered");
     }
 
     return filterResults;

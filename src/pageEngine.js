@@ -2,6 +2,10 @@
  * This defines an object for interacting with the HN page itself, at a low-level.
  */
 class PageEngine {
+  constructor(logger) {
+    this.logger = logger;
+  }
+
   /**
    * Get the thing holding the list of submissions.
    */
@@ -29,7 +33,7 @@ class PageEngine {
    */
   setRank(submission, newRank) {
     if (submission === null) {
-      logWarning("submission is null");
+      this.logger.logWarning("submission is null");
 
       return;
     }
@@ -47,7 +51,7 @@ class PageEngine {
         const rank = childNode.innerText;
 
         if (rank === null) {
-          logWarning("rank is null");
+          this.logger.logWarning("rank is null");
 
           return;
         }
@@ -58,7 +62,7 @@ class PageEngine {
       }
     }
 
-    logWarning(`no rank found: ${JSON.stringify(submission)}`);
+    this.logger.logWarning(`no rank found: ${JSON.stringify(submission)}`);
   }
 
   /**
@@ -91,13 +95,13 @@ class PageEngine {
     const submissions = this.getSubmissions();
 
     if (submissions == null) {
-      logWarning("submissions are null");
+      this.logger.logWarning("submissions are null");
 
       return null;
     }
 
     if (submissions.length === 0) {
-      logWarning("submissions are empty");
+      this.logger.logWarning("submissions are empty");
 
       return null;
     }
@@ -113,7 +117,7 @@ class PageEngine {
    */
   getSource(titleInfo) {
     if (titleInfo === null) {
-      logWarning("titleInfo is null");
+      this.logger.logWarning("titleInfo is null");
 
       return null;
     }
@@ -139,7 +143,7 @@ class PageEngine {
    */
   getTitleText(titleInfo) {
     if (titleInfo === null) {
-      logWarning("titleInfo is null");
+      this.logger.logWarning("titleInfo is null");
 
       return null;
     }
@@ -162,7 +166,7 @@ class PageEngine {
    */
   getRank(submission) {
     if (submission === null) {
-      logWarning("submission is null");
+      this.logger.logWarning("submission is null");
       return null;
     }
 
@@ -179,7 +183,7 @@ class PageEngine {
         const rank = childNode.innerText;
 
         if (rank === null) {
-          logWarning("rank is null");
+          this.logger.logWarning("rank is null");
 
           return null;
         }
@@ -188,7 +192,7 @@ class PageEngine {
       }
     }
 
-    logWarning(`no rank found: ${JSON.stringify(submission)}`);
+    this.logger.logWarning(`no rank found: ${JSON.stringify(submission)}`);
 
     return null;
   }
@@ -201,7 +205,7 @@ class PageEngine {
    */
   getTitleInfo(submission) {
     if (submission === null) {
-      logWarning("submission is null");
+      this.logger.logWarning("submission is null");
 
       return null;
     }
@@ -220,7 +224,7 @@ class PageEngine {
       }
     }
 
-    logWarning(`no titleInfo found: ${JSON.stringify(submission)}`);
+    this.logger.logWarning(`no titleInfo found: ${JSON.stringify(submission)}`);
 
     return null;
   }
@@ -232,7 +236,7 @@ class PageEngine {
    */
   getSubmitter(submission) {
     if (submission === null) {
-      logWarning("submission is null");
+      this.logger.logWarning("submission is null");
 
       return null;
     }
@@ -241,7 +245,7 @@ class PageEngine {
     if (nextSibling === null) {
       // TODO: this might be a bug
       const rank = this.getRank(submission);
-      logWarning(`nextSibling is null. rank is: ${rank}`);
+      this.logger.logWarning(`nextSibling is null. rank is: ${rank}`);
 
       return null;
     }
@@ -250,7 +254,7 @@ class PageEngine {
 
     if (userLink == null) {
       const rank = this.getRank(submission);
-      logWarning(`userLink is null. rank is: ${rank}`);
+      this.logger.logWarning(`userLink is null. rank is: ${rank}`);
 
       return null;
     }
@@ -258,7 +262,7 @@ class PageEngine {
     const hrefUser = userLink.getAttribute("href");
 
     if (hrefUser == null) {
-      logWarning("hrefUser is null");
+      this.logger.logWarning("hrefUser is null");
 
       return null;
     }
@@ -318,7 +322,7 @@ class PageEngine {
           submissionInfo.source != null &&
           submissionInfo.source === entry.text.toLowerCase()
         ) {
-          logInfo(
+          this.logger.logInfo(
             `Source blacklisted - removing ${JSON.stringify(submissionInfo)}`,
           );
 
@@ -363,7 +367,7 @@ class PageEngine {
         if (
           submissionInfo.title.toLowerCase().includes(entry.text.toLowerCase())
         ) {
-          logInfo(
+          this.logger.logInfo(
             `Title keyword blacklisted - removing ${JSON.stringify(submissionInfo)}`,
           );
 
@@ -409,7 +413,7 @@ class PageEngine {
           submissionInfo.submitter != null &&
           submissionInfo.submitter.toLowerCase() === entry.text.toLowerCase()
         ) {
-          logInfo(
+          this.logger.logInfo(
             `User blacklisted - removing ${JSON.stringify(submissionInfo)}`,
           );
 
