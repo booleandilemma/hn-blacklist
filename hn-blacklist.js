@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.0.3
+// @version      3.0.4
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
@@ -14,7 +14,7 @@
 "use strict";
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.0.3";
+const UserScriptVersion = "3.0.4";
 
 async function saveInputsAsync() {
   const filtersElement = document.getElementById("filters");
@@ -93,6 +93,7 @@ async function main() {
 
   blacklister.displayResults(timeTaken, filterResults, testResults);
 }
+
 
 /**
  * This defines an object for orchestrating the high-level filtering logic.
