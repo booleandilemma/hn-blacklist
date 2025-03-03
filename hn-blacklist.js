@@ -116,6 +116,7 @@ async function main() {
   blacklister.displayResults(timeTaken, filterResults, testResults);
 }
 
+
 /**
  * This defines an object for orchestrating the high-level filtering logic.
  * It also handles user input and displaying results.
@@ -307,6 +308,7 @@ class Blacklister {
   }
 }
 
+
 /**
  * An entry for filtering submissions.
  */
@@ -375,6 +377,7 @@ class Entry {
   }
 }
 
+
 /**
  * A high-level summary of the results of what was done.
  */
@@ -414,6 +417,7 @@ class FilterResults {
     );
   }
 }
+
 
 /**
  * This defines an object for interacting with the HN page itself, at a low-level.
@@ -863,6 +867,7 @@ class PageEngine {
   }
 }
 
+
 /**
  * This class contains several tests for testing the correctness of the PageEngine.
  * As the PageEngine is the closest code in this userscript to HN,
@@ -1159,6 +1164,7 @@ class PageEngineTests {
   }
 }
 
+
 class Tester {
   runTests(testClass) {
     const tests = this.#getTests(Object.getPrototypeOf(testClass));
@@ -1251,4 +1257,7 @@ class TestResults {
   }
 }
 
+
+
 main();
+
