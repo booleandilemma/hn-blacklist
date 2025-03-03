@@ -1,8 +1,8 @@
-import PageEngine from "../src/PageEngine.js";
-import Blacklister from "../src/Blacklister.js";
-import FilterResults from "../src/FilterResults.js";
-import Tester from "../src/tests/Tester.js";
-import PageEngineTests from "../src/tests/PageEngineTests.js";
+import PageEngine from "./pageEngine.js";
+import Blacklister from "./blacklister.js";
+import FilterResults from "./filterResults.js";
+import Tester from "./tests/tester.js";
+import PageEngineTests from "./tests/pageEngineTests.js";
 // ==UserScript==
 // @name         HN Blacklist
 // @author       booleandilemma

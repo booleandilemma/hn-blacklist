@@ -2,7 +2,7 @@ import * as fs from "fs";
 
 let finalOutput = "";
 
-let mainContent = getFileContent("src/Main.js");
+let mainContent = getFileContent("src/main.js");
 mainContent = insertUseStrict(mainContent);
 
 finalOutput += mainContent;
@@ -10,16 +10,14 @@ finalOutput += mainContent;
 const files = fs
   .readdirSync("src", { recursive: true })
   .filter((f) => f.endsWith(".js"))
-  .filter((f) => f !== "Main.js")
+  .filter((f) => f !== "main.js")
   .sort();
 
 for (const file of files) {
   finalOutput += getFileContent(`src/${file}`);
 }
 
-finalOutput += "\n";
 finalOutput += "main();\n";
-finalOutput += "\n";
 
 fs.writeFileSync("hn-blacklist.js", finalOutput);
 
@@ -28,9 +26,18 @@ function getFileContent(file) {
 
   let output = "";
 
-  for (const line of content.split("\n")) {
+  const lines = content.split("\n");
+  let lineNumber = 0;
+
+  for (const line of lines) {
     if (line.startsWith("import ") || line.startsWith("export default ")) {
       continue;
+    }
+
+    lineNumber++;
+
+    if (lineNumber == lines.length - 1) {
+      break;
     }
 
     output += `${line}\n`;
