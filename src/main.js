@@ -19,30 +19,6 @@ import PageEngineTests from "./tests/pageEngineTests.js";
 const UserScriptName = "HN Blacklist";
 const UserScriptVersion = "3.0.3";
 
-/**
- * Logs an info message to the console.
- * @param {string} message - Specifies the message to log.
- */
-function logInfo(message) {
-  console.info(`${UserScriptName}: ${message}`);
-}
-
-/**
- * Logs a warning message to the console.
- * @param {string} message - Specifies the message to log.
- */
-function logWarning(message) {
-  console.warn(`${UserScriptName}: ${message}`);
-}
-
-/**
- * Logs an error message to the console.
- * @param {string} message - Specifies the message to log.
- */
-function logError(message) {
-  console.error(`${UserScriptName}: ${message}`);
-}
-
 async function saveInputsAsync() {
   const filtersElement = document.getElementById("filters");
 
@@ -84,13 +60,15 @@ function getBlacklist(filterText) {
 async function main() {
   const startTime = performance.now();
 
-  const pageEngine = new PageEngine();
+  const logger = new Logger();
+
+  const pageEngine = new PageEngine(logger);
 
   const tester = new Tester();
   const pageEngineTester = new PageEngineTests(pageEngine);
   const testResults = tester.runTests(pageEngineTester);
 
-  logInfo(testResults.summaryForLogging);
+  logger.logInfo(testResults.summaryForLogging);
 
   const filterText = (await GM.getValue("filters")) ?? "";
   const filterEvenWithTestFailures = await GM.getValue(
@@ -101,7 +79,7 @@ async function main() {
 
   const blacklist = getBlacklist(filterText);
 
-  const blacklister = new Blacklister(pageEngine, blacklist);
+  const blacklister = new Blacklister(pageEngine, blacklist, logger);
   blacklister.warnAboutInvalidBlacklistEntries();
 
   blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
