@@ -79,7 +79,7 @@ async function main() {
 
   const blacklist = getBlacklist(filterText);
 
-  const blacklister = new Blacklister(pageEngine, blacklist);
+  const blacklister = new Blacklister(pageEngine, blacklist, logger);
   blacklister.warnAboutInvalidBlacklistEntries();
 
   blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);

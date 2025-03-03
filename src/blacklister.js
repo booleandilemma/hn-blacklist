@@ -8,6 +8,7 @@ class Blacklister {
    * @param {PageEngine} pageEngine -
    * The page engine is responsible for low-level interaction with HN.
    * @param {set} blacklistInput - A set containing the things to filter on.
+   * @param {Logger} logger - The logger to use.
    */
   constructor(pageEngine, blacklistInput, logger) {
     this.pageEngine = pageEngine;
