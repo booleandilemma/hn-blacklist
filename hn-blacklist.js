@@ -16,30 +16,6 @@
 const UserScriptName = "HN Blacklist";
 const UserScriptVersion = "3.0.3";
 
-/**
- * Logs an info message to the console.
- * @param {string} message - Specifies the message to log.
- */
-function logInfo(message) {
-  console.info(`${UserScriptName}: ${message}`);
-}
-
-/**
- * Logs a warning message to the console.
- * @param {string} message - Specifies the message to log.
- */
-function logWarning(message) {
-  console.warn(`${UserScriptName}: ${message}`);
-}
-
-/**
- * Logs an error message to the console.
- * @param {string} message - Specifies the message to log.
- */
-function logError(message) {
-  console.error(`${UserScriptName}: ${message}`);
-}
-
 async function saveInputsAsync() {
   const filtersElement = document.getElementById("filters");
 
@@ -81,13 +57,15 @@ function getBlacklist(filterText) {
 async function main() {
   const startTime = performance.now();
 
-  const pageEngine = new PageEngine();
+  const logger = new Logger();
+
+  const pageEngine = new PageEngine(logger);
 
   const tester = new Tester();
   const pageEngineTester = new PageEngineTests(pageEngine);
   const testResults = tester.runTests(pageEngineTester);
 
-  logInfo(testResults.summaryForLogging);
+  logger.logInfo(testResults.summaryForLogging);
 
   const filterText = (await GM.getValue("filters")) ?? "";
   const filterEvenWithTestFailures = await GM.getValue(
@@ -98,7 +76,7 @@ async function main() {
 
   const blacklist = getBlacklist(filterText);
 
-  const blacklister = new Blacklister(pageEngine, blacklist);
+  const blacklister = new Blacklister(pageEngine, blacklist, logger);
   blacklister.warnAboutInvalidBlacklistEntries();
 
   blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
@@ -126,10 +104,12 @@ class Blacklister {
    * @param {PageEngine} pageEngine -
    * The page engine is responsible for low-level interaction with HN.
    * @param {set} blacklistInput - A set containing the things to filter on.
+   * @param {Logger} logger - The logger to use.
    */
-  constructor(pageEngine, blacklistInput) {
+  constructor(pageEngine, blacklistInput, logger) {
     this.pageEngine = pageEngine;
     this.blacklistEntries = this.buildEntries(blacklistInput);
+    this.logger = logger;
   }
 
   /**
@@ -156,7 +136,7 @@ class Blacklister {
   warnAboutInvalidBlacklistEntries() {
     this.blacklistEntries.forEach((entry) => {
       if (!entry.isValid) {
-        logError(
+        this.logger.logError(
           `"${entry.text}" is an invalid entry and will be skipped. ` +
             `Entries must begin with "source:", "title:", or "user:".`,
         );
@@ -189,11 +169,11 @@ class Blacklister {
     filterResults.submissionsFilteredByUser = submissionsFilteredByUser;
 
     if (filterResults.getTotalSubmissionsFilteredOut() > 0) {
-      logInfo("Reindexing submissions");
+      this.logger.logInfo("Reindexing submissions");
 
       this.pageEngine.reindexSubmissions(topRank);
     } else {
-      logInfo("Nothing filtered");
+      this.logger.logInfo("Nothing filtered");
     }
 
     return filterResults;
@@ -415,10 +395,40 @@ class FilterResults {
   }
 }
 
+class Logger {
+  /**
+   * Logs an info message to the console.
+   * @param {string} message - Specifies the message to log.
+   */
+  logInfo(message) {
+    console.info(`${UserScriptName}: ${message}`);
+  }
+
+  /**
+   * Logs a warning message to the console.
+   * @param {string} message - Specifies the message to log.
+   */
+  logWarning(message) {
+    console.warn(`${UserScriptName}: ${message}`);
+  }
+
+  /**
+   * Logs an error message to the console.
+   * @param {string} message - Specifies the message to log.
+   */
+  logError(message) {
+    console.error(`${UserScriptName}: ${message}`);
+  }
+}
+
 /**
  * This defines an object for interacting with the HN page itself, at a low-level.
  */
 class PageEngine {
+  constructor(logger) {
+    this.logger = logger;
+  }
+
   /**
    * Get the thing holding the list of submissions.
    */
@@ -446,7 +456,7 @@ class PageEngine {
    */
   setRank(submission, newRank) {
     if (submission === null) {
-      logWarning("submission is null");
+      this.logger.logWarning("submission is null");
 
       return;
     }
@@ -464,7 +474,7 @@ class PageEngine {
         const rank = childNode.innerText;
 
         if (rank === null) {
-          logWarning("rank is null");
+          this.logger.logWarning("rank is null");
 
           return;
         }
@@ -475,7 +485,7 @@ class PageEngine {
       }
     }
 
-    logWarning(`no rank found: ${JSON.stringify(submission)}`);
+    this.logger.logWarning(`no rank found: ${JSON.stringify(submission)}`);
   }
 
   /**
@@ -508,13 +518,13 @@ class PageEngine {
     const submissions = this.getSubmissions();
 
     if (submissions == null) {
-      logWarning("submissions are null");
+      this.logger.logWarning("submissions are null");
 
       return null;
     }
 
     if (submissions.length === 0) {
-      logWarning("submissions are empty");
+      this.logger.logWarning("submissions are empty");
 
       return null;
     }
@@ -530,7 +540,7 @@ class PageEngine {
    */
   getSource(titleInfo) {
     if (titleInfo === null) {
-      logWarning("titleInfo is null");
+      this.logger.logWarning("titleInfo is null");
 
       return null;
     }
@@ -556,7 +566,7 @@ class PageEngine {
    */
   getTitleText(titleInfo) {
     if (titleInfo === null) {
-      logWarning("titleInfo is null");
+      this.logger.logWarning("titleInfo is null");
 
       return null;
     }
@@ -579,7 +589,7 @@ class PageEngine {
    */
   getRank(submission) {
     if (submission === null) {
-      logWarning("submission is null");
+      this.logger.logWarning("submission is null");
       return null;
     }
 
@@ -596,7 +606,7 @@ class PageEngine {
         const rank = childNode.innerText;
 
         if (rank === null) {
-          logWarning("rank is null");
+          this.logger.logWarning("rank is null");
 
           return null;
         }
@@ -605,7 +615,7 @@ class PageEngine {
       }
     }
 
-    logWarning(`no rank found: ${JSON.stringify(submission)}`);
+    this.logger.logWarning(`no rank found: ${JSON.stringify(submission)}`);
 
     return null;
   }
@@ -618,7 +628,7 @@ class PageEngine {
    */
   getTitleInfo(submission) {
     if (submission === null) {
-      logWarning("submission is null");
+      this.logger.logWarning("submission is null");
 
       return null;
     }
@@ -637,7 +647,7 @@ class PageEngine {
       }
     }
 
-    logWarning(`no titleInfo found: ${JSON.stringify(submission)}`);
+    this.logger.logWarning(`no titleInfo found: ${JSON.stringify(submission)}`);
 
     return null;
   }
@@ -649,7 +659,7 @@ class PageEngine {
    */
   getSubmitter(submission) {
     if (submission === null) {
-      logWarning("submission is null");
+      this.logger.logWarning("submission is null");
 
       return null;
     }
@@ -658,7 +668,7 @@ class PageEngine {
     if (nextSibling === null) {
       // TODO: this might be a bug
       const rank = this.getRank(submission);
-      logWarning(`nextSibling is null. rank is: ${rank}`);
+      this.logger.logWarning(`nextSibling is null. rank is: ${rank}`);
 
       return null;
     }
@@ -667,7 +677,7 @@ class PageEngine {
 
     if (userLink == null) {
       const rank = this.getRank(submission);
-      logWarning(`userLink is null. rank is: ${rank}`);
+      this.logger.logWarning(`userLink is null. rank is: ${rank}`);
 
       return null;
     }
@@ -675,7 +685,7 @@ class PageEngine {
     const hrefUser = userLink.getAttribute("href");
 
     if (hrefUser == null) {
-      logWarning("hrefUser is null");
+      this.logger.logWarning("hrefUser is null");
 
       return null;
     }
@@ -735,7 +745,7 @@ class PageEngine {
           submissionInfo.source != null &&
           submissionInfo.source === entry.text.toLowerCase()
         ) {
-          logInfo(
+          this.logger.logInfo(
             `Source blacklisted - removing ${JSON.stringify(submissionInfo)}`,
           );
 
@@ -780,7 +790,7 @@ class PageEngine {
         if (
           submissionInfo.title.toLowerCase().includes(entry.text.toLowerCase())
         ) {
-          logInfo(
+          this.logger.logInfo(
             `Title keyword blacklisted - removing ${JSON.stringify(submissionInfo)}`,
           );
 
@@ -826,7 +836,7 @@ class PageEngine {
           submissionInfo.submitter != null &&
           submissionInfo.submitter.toLowerCase() === entry.text.toLowerCase()
         ) {
-          logInfo(
+          this.logger.logInfo(
             `User blacklisted - removing ${JSON.stringify(submissionInfo)}`,
           );
 

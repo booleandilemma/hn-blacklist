@@ -23,3 +23,5 @@ class Logger {
     console.error(`${UserScriptName}: ${message}`);
   }
 }
+
+export default Logger;
