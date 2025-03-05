@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.0.4
+// @version      3.1.0
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
@@ -14,7 +14,7 @@
 "use strict";
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.0.4";
+const UserScriptVersion = "3.1.0";
 
 async function saveInputsAsync() {
   const filtersElement = document.getElementById("filters");
@@ -329,15 +329,38 @@ class Entry {
    * @returns {boolean} A boole indicating whether or not the entry is valid.
    */
   #isValidInput(input) {
-    if (
-      input.startsWith("source:") ||
-      input.startsWith("title:") ||
-      input.startsWith("user:")
-    ) {
+    if (input.startsWith("source:") && this.#hasValidStars(input)) {
+      return true;
+    }
+
+    if (input.startsWith("title:") || input.startsWith("user:")) {
       return true;
     }
 
     return false;
+  }
+
+  #hasValidStars(input) {
+    input = input.replace("source:", "");
+
+    let starCount = 0;
+
+    for (let c of input) {
+      if (c == "*") {
+        starCount++;
+      }
+    }
+
+    switch (starCount) {
+      case 0:
+        return true;
+      case 1:
+        return input.startsWith("*") || input.endsWith("*");
+      case 2:
+        return input.startsWith("*") && input.endsWith("*");
+      default:
+        return false;
+    }
   }
 
   #buildEntry(input) {
@@ -734,6 +757,36 @@ class PageEngine {
 
     let submissionsFiltered = 0;
 
+    function shouldFilter(source, entry) {
+      entry = entry.text.toLowerCase();
+
+      let starCount = 0;
+
+      for (let c of entry) {
+        if (c == "*") {
+          starCount++;
+        }
+      }
+
+      switch (starCount) {
+        case 0:
+          return source === entry;
+        case 1:
+          if (entry.endsWith("*")) {
+            return source.startsWith(entry.replace("*", ""));
+          } else {
+            // starts with *
+            return source.endsWith(entry.replace("*", ""));
+          }
+        case 2:
+          return source.includes(entry.replaceAll("*", ""));
+        default:
+          this.logger.logError(`Invalid number of asterisks in ${entry}`);
+
+          return false;
+      }
+    }
+
     blacklistEntries.forEach((entry) => {
       if (entry.prefix !== "source") {
         return;
@@ -742,10 +795,11 @@ class PageEngine {
       for (let i = 0; i < submissions.length; i++) {
         const submissionInfo = this.getSubmissionInfo(submissions[i]);
 
-        if (
-          submissionInfo.source != null &&
-          submissionInfo.source === entry.text.toLowerCase()
-        ) {
+        if (submissionInfo.source == null) {
+          continue;
+        }
+
+        if (shouldFilter.call(this, submissionInfo.source, entry)) {
           this.logger.logInfo(
             `Source blacklisted - removing ${JSON.stringify(submissionInfo)}`,
           );

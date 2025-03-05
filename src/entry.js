@@ -39,15 +39,38 @@ class Entry {
    * @returns {boolean} A boole indicating whether or not the entry is valid.
    */
   #isValidInput(input) {
-    if (
-      input.startsWith("source:") ||
-      input.startsWith("title:") ||
-      input.startsWith("user:")
-    ) {
+    if (input.startsWith("source:") && this.#hasValidStars(input)) {
+      return true;
+    }
+
+    if (input.startsWith("title:") || input.startsWith("user:")) {
       return true;
     }
 
     return false;
+  }
+
+  #hasValidStars(input) {
+    input = input.replace("source:", "");
+
+    let starCount = 0;
+
+    for (let c of input) {
+      if (c == "*") {
+        starCount++;
+      }
+    }
+
+    switch (starCount) {
+      case 0:
+        return true;
+      case 1:
+        return input.startsWith("*") || input.endsWith("*");
+      case 2:
+        return input.startsWith("*") && input.endsWith("*");
+      default:
+        return false;
+    }
   }
 
   #buildEntry(input) {
