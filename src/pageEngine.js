@@ -310,6 +310,27 @@ class PageEngine {
 
     let submissionsFiltered = 0;
 
+    function shouldFilter(source, entry) {
+      const entryText = entry.text.toLowerCase();
+
+      switch (entry.starCount) {
+        case 0:
+          return source === entryText;
+        case 1:
+          if (entryText.endsWith("*")) {
+            return source.startsWith(entryText.replace("*", ""));
+          } else {
+            return source.endsWith(entryText.replace("*", ""));
+          }
+        case 2:
+          return source.includes(entryText.replaceAll("*", ""));
+        default:
+          this.logger.logError(`Invalid number of asterisks in ${entryText}`);
+
+          return false;
+      }
+    }
+
     blacklistEntries.forEach((entry) => {
       if (entry.prefix !== "source") {
         return;
@@ -318,10 +339,11 @@ class PageEngine {
       for (let i = 0; i < submissions.length; i++) {
         const submissionInfo = this.getSubmissionInfo(submissions[i]);
 
-        if (
-          submissionInfo.source != null &&
-          submissionInfo.source === entry.text.toLowerCase()
-        ) {
+        if (submissionInfo.source == null) {
+          continue;
+        }
+
+        if (shouldFilter.call(this, submissionInfo.source, entry)) {
           this.logger.logInfo(
             `Source blacklisted - removing ${JSON.stringify(submissionInfo)}`,
           );

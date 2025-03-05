@@ -29,29 +29,65 @@ class Entry {
      */
     this.text = null;
 
+    /**
+     * starCount indicates the number of stars (asterisks) of the source to filter by.
+     * @type {number}
+     * @public
+     */
+    this.starCount = null;
+
     this.#buildEntry(input);
   }
 
   /**
    * Determines if the input is valid.
    * @param {string} input - Something the user wants to filter by.
+   * @param {number} starCount - The number of stars in the input.
    * It can begin with "source:", "title:", or "user:".
    * @returns {boolean} A boole indicating whether or not the entry is valid.
    */
-  #isValidInput(input) {
-    if (
-      input.startsWith("source:") ||
-      input.startsWith("title:") ||
-      input.startsWith("user:")
-    ) {
+  #isValidInput(input, starCount) {
+    if (input.startsWith("source:") && this.#hasValidStars(input, starCount)) {
+      return true;
+    }
+
+    if (input.startsWith("title:") || input.startsWith("user:")) {
       return true;
     }
 
     return false;
   }
 
+  #hasValidStars(input, starCount) {
+    input = input.replace("source:", "");
+
+    switch (starCount) {
+      case 0:
+        return true;
+      case 1:
+        return input.startsWith("*") || input.endsWith("*");
+      case 2:
+        return input.startsWith("*") && input.endsWith("*");
+      default:
+        return false;
+    }
+  }
+
+  #getStarCount(input) {
+    let starCount = 0;
+
+    for (let c of input) {
+      if (c == "*") {
+        starCount++;
+      }
+    }
+
+    return starCount;
+  }
+
   #buildEntry(input) {
-    this.isValid = this.#isValidInput(input);
+    this.starCount = this.#getStarCount(input);
+    this.isValid = this.#isValidInput(input, this.starCount);
 
     if (this.isValid) {
       const prefix = input.substring(0, input.indexOf(":"));

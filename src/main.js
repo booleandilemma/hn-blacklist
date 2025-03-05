@@ -10,14 +10,14 @@ import PageEngineTests from "./tests/pageEngineTests.js";
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.0.4
+// @version      3.1.0
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
 // ==/UserScript==
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.0.4";
+const UserScriptVersion = "3.1.0";
 
 async function saveInputsAsync() {
   const filtersElement = document.getElementById("filters");
