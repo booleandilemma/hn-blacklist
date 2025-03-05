@@ -11,14 +11,14 @@ import Logger from "./tests/logger.js";
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.1.0
+// @version      3.1.1
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
 // ==/UserScript==
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.1.0";
+const UserScriptVersion = "3.1.1";
 
 function getBlacklist(filterText) {
   const blacklist = new Set();
