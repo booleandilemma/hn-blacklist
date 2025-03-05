@@ -150,7 +150,7 @@ class Blacklister {
 
     document.getElementById("chkfilterEvenWithTestFailures").checked =
       filterEvenWithTestFailures;
-    document.getElementById("btnSaveFilters").onclick = this.saveInputsAsync;
+    document.getElementById("btnSaveFilters").onclick = this.#saveInputsAsync;
   }
 
   /**
@@ -192,7 +192,7 @@ class Blacklister {
       `Execution Time: ${timeTaken} ms`;
   }
 
-  async saveInputsAsync() {
+  async #saveInputsAsync() {
     const filtersElement = document.getElementById("filters");
 
     const filterText = filtersElement.value.trim();
