@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.1.0
+// @version      3.1.1
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
@@ -14,25 +14,7 @@
 "use strict";
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.1.0";
-
-async function saveInputsAsync() {
-  const filtersElement = document.getElementById("filters");
-
-  const filterText = filtersElement.value.trim();
-
-  const chkfilterEvenWithTestFailuresElement = document.getElementById(
-    "chkfilterEvenWithTestFailures",
-  );
-
-  await GM.setValue("filters", filterText);
-  await GM.setValue(
-    "filterEvenWithTestFailures",
-    chkfilterEvenWithTestFailuresElement.checked,
-  );
-
-  alert("Filters saved! Please refresh the page.");
-}
+const UserScriptVersion = "3.1.1";
 
 function getBlacklist(filterText) {
   const blacklist = new Set();
@@ -54,6 +36,7 @@ function getBlacklist(filterText) {
   return blacklist;
 }
 
+// eslint-disable-next-line no-unused-vars
 async function main() {
   const startTime = performance.now();
 
@@ -67,10 +50,12 @@ async function main() {
 
   logger.logInfo(testResults.summaryForLogging);
 
+  /* eslint-disable no-undef */
   const filterText = (await GM.getValue("filters")) ?? "";
   const filterEvenWithTestFailures = await GM.getValue(
     "filterEvenWithTestFailures",
   );
+  /* eslint-enable no-undef */
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
 
@@ -244,7 +229,7 @@ class Blacklister {
 
     document.getElementById("chkfilterEvenWithTestFailures").checked =
       filterEvenWithTestFailures;
-    document.getElementById("btnSaveFilters").onclick = saveInputsAsync;
+    document.getElementById("btnSaveFilters").onclick = this.#saveInputsAsync;
   }
 
   /**
@@ -284,6 +269,26 @@ class Blacklister {
     document.getElementById("validityResults").innerText = entryValidityMessage;
     document.getElementById("executionTimeResults").innerText =
       `Execution Time: ${timeTaken} ms`;
+  }
+
+  async #saveInputsAsync() {
+    const filtersElement = document.getElementById("filters");
+
+    const filterText = filtersElement.value.trim();
+
+    const chkfilterEvenWithTestFailuresElement = document.getElementById(
+      "chkfilterEvenWithTestFailures",
+    );
+
+    /* eslint-disable no-undef */
+    await GM.setValue("filters", filterText);
+    await GM.setValue(
+      "filterEvenWithTestFailures",
+      chkfilterEvenWithTestFailuresElement.checked,
+    );
+    /* eslint-enable no-undef */
+
+    alert("Filters saved! Please refresh the page.");
   }
 }
 
