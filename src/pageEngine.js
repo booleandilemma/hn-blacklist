@@ -311,30 +311,21 @@ class PageEngine {
     let submissionsFiltered = 0;
 
     function shouldFilter(source, entry) {
-      entry = entry.text.toLowerCase();
+      const entryText = entry.text.toLowerCase();
 
-      let starCount = 0;
-
-      for (let c of entry) {
-        if (c == "*") {
-          starCount++;
-        }
-      }
-
-      switch (starCount) {
+      switch (entry.starCount) {
         case 0:
-          return source === entry;
+          return source === entryText;
         case 1:
-          if (entry.endsWith("*")) {
-            return source.startsWith(entry.replace("*", ""));
+          if (entryText.endsWith("*")) {
+            return source.startsWith(entryText.replace("*", ""));
           } else {
-            // starts with *
-            return source.endsWith(entry.replace("*", ""));
+            return source.endsWith(entryText.replace("*", ""));
           }
         case 2:
-          return source.includes(entry.replaceAll("*", ""));
+          return source.includes(entryText.replaceAll("*", ""));
         default:
-          this.logger.logError(`Invalid number of asterisks in ${entry}`);
+          this.logger.logError(`Invalid number of asterisks in ${entryText}`);
 
           return false;
       }

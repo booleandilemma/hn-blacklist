@@ -5,8 +5,9 @@
   "main": "hn-blacklist.js",
   "type": "module",
   "scripts": {
-    "build": "node builder.js",
+    "build": "node builder.js && npm run format-output",
     "format": "prettier --write src/**/*.js && prettier --write builder.js && prettier --write hn-blacklist.js",
+    "format-output": "prettier --write hn-blacklist.js --log-level silent",
     "lint": "eslint src/**/*.js && eslint builder.js && eslint hn-blacklist.js",
     "lint-fix": "eslint --fix src/**/*.js && eslint --fix builder.js && eslint --fix hn-blacklist.js",
     "test": "echo \"Error: no test specified\" && exit 1"

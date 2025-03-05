@@ -94,7 +94,6 @@ async function main() {
   blacklister.displayResults(timeTaken, filterResults, testResults);
 }
 
-
 /**
  * This defines an object for orchestrating the high-level filtering logic.
  * It also handles user input and displaying results.
@@ -319,17 +318,25 @@ class Entry {
      */
     this.text = null;
 
+    /**
+     * starCount indicates the number of stars (asterisks) of the source to filter by.
+     * @type {number}
+     * @public
+     */
+    this.starCount = null;
+
     this.#buildEntry(input);
   }
 
   /**
    * Determines if the input is valid.
    * @param {string} input - Something the user wants to filter by.
+   * @param {number} starCount - The number of stars in the input.
    * It can begin with "source:", "title:", or "user:".
    * @returns {boolean} A boole indicating whether or not the entry is valid.
    */
-  #isValidInput(input) {
-    if (input.startsWith("source:") && this.#hasValidStars(input)) {
+  #isValidInput(input, starCount) {
+    if (input.startsWith("source:") && this.#hasValidStars(input, starCount)) {
       return true;
     }
 
@@ -340,16 +347,8 @@ class Entry {
     return false;
   }
 
-  #hasValidStars(input) {
+  #hasValidStars(input, starCount) {
     input = input.replace("source:", "");
-
-    let starCount = 0;
-
-    for (let c of input) {
-      if (c == "*") {
-        starCount++;
-      }
-    }
 
     switch (starCount) {
       case 0:
@@ -363,8 +362,21 @@ class Entry {
     }
   }
 
+  #getStarCount(input) {
+    let starCount = 0;
+
+    for (let c of input) {
+      if (c == "*") {
+        starCount++;
+      }
+    }
+
+    return starCount;
+  }
+
   #buildEntry(input) {
-    this.isValid = this.#isValidInput(input);
+    this.starCount = this.#getStarCount(input);
+    this.isValid = this.#isValidInput(input, this.starCount);
 
     if (this.isValid) {
       const prefix = input.substring(0, input.indexOf(":"));
@@ -758,30 +770,21 @@ class PageEngine {
     let submissionsFiltered = 0;
 
     function shouldFilter(source, entry) {
-      entry = entry.text.toLowerCase();
+      const entryText = entry.text.toLowerCase();
 
-      let starCount = 0;
-
-      for (let c of entry) {
-        if (c == "*") {
-          starCount++;
-        }
-      }
-
-      switch (starCount) {
+      switch (entry.starCount) {
         case 0:
-          return source === entry;
+          return source === entryText;
         case 1:
-          if (entry.endsWith("*")) {
-            return source.startsWith(entry.replace("*", ""));
+          if (entryText.endsWith("*")) {
+            return source.startsWith(entryText.replace("*", ""));
           } else {
-            // starts with *
-            return source.endsWith(entry.replace("*", ""));
+            return source.endsWith(entryText.replace("*", ""));
           }
         case 2:
-          return source.includes(entry.replaceAll("*", ""));
+          return source.includes(entryText.replaceAll("*", ""));
         default:
-          this.logger.logError(`Invalid number of asterisks in ${entry}`);
+          this.logger.logError(`Invalid number of asterisks in ${entryText}`);
 
           return false;
       }
