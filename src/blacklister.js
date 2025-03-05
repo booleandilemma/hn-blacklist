@@ -1,3 +1,5 @@
+import Entry from "./entry.js";
+import FilterResults from "./filterResults.js";
 /**
  * This defines an object for orchestrating the high-level filtering logic.
  * It also handles user input and displaying results.
@@ -148,7 +150,7 @@ class Blacklister {
 
     document.getElementById("chkfilterEvenWithTestFailures").checked =
       filterEvenWithTestFailures;
-    document.getElementById("btnSaveFilters").onclick = saveInputsAsync;
+    document.getElementById("btnSaveFilters").onclick = this.saveInputsAsync;
   }
 
   /**
@@ -188,6 +190,26 @@ class Blacklister {
     document.getElementById("validityResults").innerText = entryValidityMessage;
     document.getElementById("executionTimeResults").innerText =
       `Execution Time: ${timeTaken} ms`;
+  }
+
+  async saveInputsAsync() {
+    const filtersElement = document.getElementById("filters");
+
+    const filterText = filtersElement.value.trim();
+
+    const chkfilterEvenWithTestFailuresElement = document.getElementById(
+      "chkfilterEvenWithTestFailures",
+    );
+
+    /* eslint-disable no-undef */
+    await GM.setValue("filters", filterText);
+    await GM.setValue(
+      "filterEvenWithTestFailures",
+      chkfilterEvenWithTestFailuresElement.checked,
+    );
+    /* eslint-enable no-undef */
+
+    alert("Filters saved! Please refresh the page.");
   }
 }
 
