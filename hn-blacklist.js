@@ -330,6 +330,13 @@ class Entry {
      */
     this.starCount = null;
 
+    /**
+     * isExclusion indicates whether or not this source should be excluded from blacklisting.
+     * @type {boolean}
+     * @public
+     */
+    this.isExclusion = null;
+
     this.#buildEntry(input);
   }
 
@@ -341,15 +348,39 @@ class Entry {
    * @returns {boolean} A boole indicating whether or not the entry is valid.
    */
   #isValidInput(input, starCount) {
-    if (input.startsWith("source:") && this.#hasValidStars(input, starCount)) {
+    if (input.startsWith("source:") && this.#isValidSource(input, starCount)) {
       return true;
     }
 
-    if (input.startsWith("title:") || input.startsWith("user:")) {
+    if (input.startsWith("title:") && this.#isValidTitle(input)) {
+      return true;
+    }
+
+    if (input.startsWith("user:") && this.#isValidUser(input)) {
       return true;
     }
 
     return false;
+  }
+
+  #isValidSource(input, starCount) {
+    if (input.includes("!") && input.includes("*")) {
+      return false;
+    }
+
+    if (input.includes("!") && !input.startsWith("source:!")) {
+      return false;
+    }
+
+    return this.#hasValidStars(input, starCount);
+  }
+
+  #isValidTitle(input) {
+    return !input.includes("!") && !input.includes("*");
+  }
+
+  #isValidUser(input) {
+    return !input.includes("!") && !input.includes("*");
   }
 
   #hasValidStars(input, starCount) {
@@ -379,8 +410,13 @@ class Entry {
     return starCount;
   }
 
+  #isExclusion(input) {
+    return input.startsWith("source:!");
+  }
+
   #buildEntry(input) {
     this.starCount = this.#getStarCount(input);
+    this.isExclusion = this.#isExclusion(input);
     this.isValid = this.#isValidInput(input, this.starCount);
 
     if (this.isValid) {
@@ -795,8 +831,16 @@ class PageEngine {
       }
     }
 
+    const exclusions = new Set();
+
     blacklistEntries.forEach((entry) => {
-      if (entry.prefix !== "source") {
+      if (entry.isExclusion) {
+        exclusions.add(entry.text.toLowerCase().substring(1));
+      }
+    });
+
+    blacklistEntries.forEach((entry) => {
+      if (entry.prefix !== "source" || entry.isExclusion) {
         return;
       }
 
@@ -804,6 +848,16 @@ class PageEngine {
         const submissionInfo = this.getSubmissionInfo(submissions[i]);
 
         if (submissionInfo.source == null) {
+          this.logger.logWarning(`source is null. rank is ${i}`);
+
+          continue;
+        }
+
+        if (exclusions.has(submissionInfo.source)) {
+          this.logger.logInfo(
+            `Source excluded from blacklisting - ${submissionInfo.source}`,
+          );
+
           continue;
         }
 

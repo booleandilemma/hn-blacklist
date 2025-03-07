@@ -331,8 +331,16 @@ class PageEngine {
       }
     }
 
+    const exclusions = new Set();
+
     blacklistEntries.forEach((entry) => {
-      if (entry.prefix !== "source") {
+      if (entry.isExclusion) {
+        exclusions.add(entry.text.toLowerCase().substring(1));
+      }
+    });
+
+    blacklistEntries.forEach((entry) => {
+      if (entry.prefix !== "source" || entry.isExclusion) {
         return;
       }
 
@@ -340,6 +348,16 @@ class PageEngine {
         const submissionInfo = this.getSubmissionInfo(submissions[i]);
 
         if (submissionInfo.source == null) {
+          this.logger.logWarning(`source is null. rank is ${i}`);
+
+          continue;
+        }
+
+        if (exclusions.has(submissionInfo.source)) {
+          this.logger.logInfo(
+            `Source excluded from blacklisting - ${submissionInfo.source}`,
+          );
+
           continue;
         }
 
