@@ -7,10 +7,9 @@ import FilterResults from "./filterResults.js";
 class Blacklister {
   /**
    * Builds a list of entries from user input.
-   * @param {PageEngine} pageEngine -
-   * The page engine is responsible for low-level interaction with HN.
-   * @param {set} blacklistInput - A set containing the things to filter on.
-   * @param {Logger} logger - The logger to use.
+   * @param {PageEngine} pageEngine The page engine is responsible for low-level interaction with HN.
+   * @param {set} blacklistInput A set containing the things to filter on.
+   * @param {Logger} logger The logger to use.
    */
   constructor(pageEngine, blacklistInput, logger) {
     this.pageEngine = pageEngine;
@@ -20,7 +19,7 @@ class Blacklister {
 
   /**
    * Builds a list of entries from user input.
-   * @param {set} blacklistInput - A set containing the things to filter on.
+   * @param {set} blacklistInput A set containing the things to filter on.
    * @returns {Entry[]} An array of entries.
    */
   buildEntries(blacklistInput) {
@@ -37,7 +36,6 @@ class Blacklister {
 
   /**
    * Warns the user about invalid entries.
-   * @param {Entry[]} blacklistEntries - A list of entries containing the submissions to filter out.
    */
   warnAboutInvalidBlacklistEntries() {
     this.blacklistEntries.forEach((entry) => {
@@ -155,9 +153,9 @@ class Blacklister {
 
   /**
    * Displays results to the user.
-   * @param {number} timeTaken - The time the script took to execute.
-   * @param {FilterResults} filterResults - High-level results of what was done.
-   * @param {TestResults} testResults - A summary of test results.
+   * @param {number} timeTaken The time the script took to execute.
+   * @param {FilterResults} filterResults High-level results of what was done.
+   * @param {TestResults} testResults A summary of test results.
    */
   displayResults(timeTaken, filterResults, testResults) {
     let entryValidityMessage = "Entry Validity: ";
