@@ -70,7 +70,6 @@ class Entry {
   }
 
   #isValidSource(input, starCount) {
-
     if (this.#getCharCount(input, "!") > 1) {
       return false;
     }
