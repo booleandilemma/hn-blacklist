@@ -821,9 +821,9 @@ class PageEngine {
         case 1:
           if (entryText.endsWith("*")) {
             return source.startsWith(entryText.replace("*", ""));
-          } else {
-            return source.endsWith(entryText.replace("*", ""));
           }
+
+          return source.endsWith(entryText.replace("*", ""));
         case 2:
           return source.includes(entryText.replaceAll("*", ""));
         default:

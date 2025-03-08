@@ -8,7 +8,6 @@ class TestResults {
 }
 
 class Tester {
-
   runTests(testClass) {
     const tests = this.#getTests(Object.getPrototypeOf(testClass));
 

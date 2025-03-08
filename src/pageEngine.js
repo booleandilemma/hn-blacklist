@@ -320,7 +320,7 @@ class PageEngine {
           if (entryText.endsWith("*")) {
             return source.startsWith(entryText.replace("*", ""));
           }
-          
+
           return source.endsWith(entryText.replace("*", ""));
         case 2:
           return source.includes(entryText.replaceAll("*", ""));
