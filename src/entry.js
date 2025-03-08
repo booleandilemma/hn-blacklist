@@ -70,6 +70,11 @@ class Entry {
   }
 
   #isValidSource(input, starCount) {
+
+    if (this.#getCharCount(input, "!") > 1) {
+      return false;
+    }
+
     if (input.includes("!") && input.includes("*")) {
       return false;
     }
@@ -104,11 +109,11 @@ class Entry {
     }
   }
 
-  #getStarCount(input) {
+  #getCharCount(input, char) {
     let starCount = 0;
 
     for (let c of input) {
-      if (c == "*") {
+      if (c == char) {
         starCount++;
       }
     }
@@ -121,7 +126,7 @@ class Entry {
   }
 
   #buildEntry(input) {
-    this.starCount = this.#getStarCount(input);
+    this.starCount = this.#getCharCount(input, "*");
     this.isExclusion = this.#isExclusion(input);
     this.isValid = this.#isValidInput(input, this.starCount);
 
