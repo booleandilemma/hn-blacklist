@@ -66,7 +66,7 @@ async function main() {
 
   blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
 
-  let filterResults = null;
+  let filterResults;
 
   if (filterEvenWithTestFailures || testResults.failCount === 0) {
     filterResults = blacklister.filterSubmissions();
@@ -86,10 +86,9 @@ async function main() {
 class Blacklister {
   /**
    * Builds a list of entries from user input.
-   * @param {PageEngine} pageEngine -
-   * The page engine is responsible for low-level interaction with HN.
-   * @param {set} blacklistInput - A set containing the things to filter on.
-   * @param {Logger} logger - The logger to use.
+   * @param {PageEngine} pageEngine The page engine is responsible for low-level interaction with HN.
+   * @param {set} blacklistInput A set containing the things to filter on.
+   * @param {Logger} logger The logger to use.
    */
   constructor(pageEngine, blacklistInput, logger) {
     this.pageEngine = pageEngine;
@@ -99,7 +98,7 @@ class Blacklister {
 
   /**
    * Builds a list of entries from user input.
-   * @param {set} blacklistInput - A set containing the things to filter on.
+   * @param {set} blacklistInput A set containing the things to filter on.
    * @returns {Entry[]} An array of entries.
    */
   buildEntries(blacklistInput) {
@@ -116,7 +115,6 @@ class Blacklister {
 
   /**
    * Warns the user about invalid entries.
-   * @param {Entry[]} blacklistEntries - A list of entries containing the submissions to filter out.
    */
   warnAboutInvalidBlacklistEntries() {
     this.blacklistEntries.forEach((entry) => {
@@ -234,9 +232,9 @@ class Blacklister {
 
   /**
    * Displays results to the user.
-   * @param {number} timeTaken - The time the script took to execute.
-   * @param {FilterResults} filterResults - High-level results of what was done.
-   * @param {TestResults} testResults - A summary of test results.
+   * @param {number} timeTaken The time the script took to execute.
+   * @param {FilterResults} filterResults High-level results of what was done.
+   * @param {TestResults} testResults A summary of test results.
    */
   displayResults(timeTaken, filterResults, testResults) {
     let entryValidityMessage = "Entry Validity: ";
@@ -298,7 +296,7 @@ class Blacklister {
 class Entry {
   /**
    * Creates an entry.
-   * @param {string} input - Something the user wants to filter by.
+   * @param {string} input Something the user wants to filter by.
    * It can begin with "source:", "title:", or "user:".
    */
   constructor(input) {
@@ -342,8 +340,8 @@ class Entry {
 
   /**
    * Determines if the input is valid.
-   * @param {string} input - Something the user wants to filter by.
-   * @param {number} starCount - The number of stars in the input.
+   * @param {string} input Something the user wants to filter by.
+   * @param {number} starCount The number of stars in the input.
    * It can begin with "source:", "title:", or "user:".
    * @returns {boolean} A boole indicating whether or not the entry is valid.
    */
@@ -405,8 +403,8 @@ class Entry {
   #getCharCount(input, char) {
     let starCount = 0;
 
-    for (let c of input) {
-      if (c == char) {
+    for (const c of input) {
+      if (c === char) {
         starCount++;
       }
     }
@@ -479,7 +477,7 @@ class FilterResults {
 class Logger {
   /**
    * Logs an info message to the console.
-   * @param {string} message - Specifies the message to log.
+   * @param {string} message Specifies the message to log.
    */
   logInfo(message) {
     console.info(`${UserScriptName}: ${message}`);
@@ -487,7 +485,7 @@ class Logger {
 
   /**
    * Logs a warning message to the console.
-   * @param {string} message - Specifies the message to log.
+   * @param {string} message Specifies the message to log.
    */
   logWarning(message) {
     console.warn(`${UserScriptName}: ${message}`);
@@ -495,7 +493,7 @@ class Logger {
 
   /**
    * Logs an error message to the console.
-   * @param {string} message - Specifies the message to log.
+   * @param {string} message Specifies the message to log.
    */
   logError(message) {
     console.error(`${UserScriptName}: ${message}`);
@@ -532,8 +530,8 @@ class PageEngine {
 
   /**
    * Updates the specified submission to the specified rank.
-   * @param {?object} submission - Specifies the HN submission.
-   * @param {number} newRank - Specifies the new rank to set on the specified submission.
+   * @param {?object} submission Specifies the HN submission.
+   * @param {number} newRank Specifies the new rank to set on the specified submission.
    */
   setRank(submission, newRank) {
     if (submission === null) {
@@ -580,7 +578,7 @@ class PageEngine {
    * any filtering is done. For example, if the current HN page is the first one,
    * the top rank will be "1", and so numbering will start from 1. If the current page
    * is the second one, the top rank will be "31".
-   * @param {number} topRank - Specifies the top rank to start numbering from.
+   * @param {number} topRank Specifies the top rank to start numbering from.
    */
   reindexSubmissions(topRank) {
     const submissions = this.getSubmissions();
@@ -617,7 +615,7 @@ class PageEngine {
 
   /**
    * Returns the source of the specified titleInfo.
-   * @param {?object} titleInfo - An element containing the submission headline and source.
+   * @param {?object} titleInfo An element containing the submission headline and source.
    */
   getSource(titleInfo) {
     if (titleInfo === null) {
@@ -643,7 +641,7 @@ class PageEngine {
 
   /**
    * Returns the titleText (i.e. headline) of the specified titleInfo.
-   * @param {?object} titleInfo - An element containing the submission headline and source.
+   * @param {?object} titleInfo An element containing the submission headline and source.
    */
   getTitleText(titleInfo) {
     if (titleInfo === null) {
@@ -664,7 +662,7 @@ class PageEngine {
   }
 
   /**
-   * @param {?object} submission - Specifies the HN submission.
+   * @param {?object} submission Specifies the HN submission.
    * @returns {?number} The "rank" of an HN submission.
    * The rank is defined as the number to the far left of the submission.
    */
@@ -705,7 +703,7 @@ class PageEngine {
    * Returns the titleInfo of the specified submission.
    * This is an element containing the headline and the source
    * of the submission.
-   * @param {?object} submission - Specifies the HN submission.
+   * @param {?object} submission Specifies the HN submission.
    */
   getTitleInfo(submission) {
     if (submission === null) {
@@ -735,7 +733,7 @@ class PageEngine {
 
   /**
    * Returns the submitter of the specified submission.
-   * @param {?object} submission - Specifies the HN submission.
+   * @param {?object} submission Specifies the HN submission.
    * @returns {?string} the username of the submitter.
    */
   getSubmitter(submission) {
@@ -777,7 +775,7 @@ class PageEngine {
   /**
    * Returns an object representing the different parts of the specified submission.
    * These are: title, source, rank, and rowIndex.
-   * @param {?object} submission - Specifies the HN submission.
+   * @param {?object} submission Specifies the HN submission.
    */
   getSubmissionInfo(submission) {
     if (submission === null) {
@@ -804,7 +802,7 @@ class PageEngine {
   /**
    * Filters out (i.e. deletes) all submissions on the
    * current HN page with a domain source contained in the specified blacklist.
-   * @param {Entry[]} blacklistEntries - A list containing entries to filter on.
+   * @param {Entry[]} blacklistEntries A list containing entries to filter on.
    * @returns {number} A number indicating how many submissions were filtered out.
    */
   filterSubmissionsBySource(blacklistEntries) {
@@ -823,9 +821,9 @@ class PageEngine {
         case 1:
           if (entryText.endsWith("*")) {
             return source.startsWith(entryText.replace("*", ""));
-          } else {
-            return source.endsWith(entryText.replace("*", ""));
           }
+
+          return source.endsWith(entryText.replace("*", ""));
         case 2:
           return source.includes(entryText.replaceAll("*", ""));
         default:
@@ -890,7 +888,7 @@ class PageEngine {
   /**
    * Filters out (i.e. deletes) all submissions on the
    * current HN page with a title substring contained in the specified blacklist.
-   * @param {Entry[]} blacklistEntries - A list containing entries to filter on.
+   * @param {Entry[]} blacklistEntries A list containing entries to filter on.
    * @returns {number} A number indicating how many submissions were filtered out.
    */
   filterSubmissionsByTitle(blacklistEntries) {
@@ -935,7 +933,7 @@ class PageEngine {
   /**
    * Filters out (i.e. deletes) all submissions on the
    * current HN page submitted by the specified user.
-   * @param {Entry[]} blacklistEntries - A list containing entries to filter on.
+   * @param {Entry[]} blacklistEntries A list containing entries to filter on.
    * @returns {number} A number indicating how many submissions were filtered out.
    */
   filterSubmissionsByUser(blacklistEntries) {
@@ -1290,11 +1288,20 @@ class PageEngineTests {
   }
 }
 
+class TestResults {
+  constructor() {
+    this.filterEvenWithTestFailures = null;
+    this.failCount = null;
+    this.testCount = null;
+    this.timeTaken = null;
+  }
+}
+
 class Tester {
   runTests(testClass) {
     const tests = this.#getTests(Object.getPrototypeOf(testClass));
 
-    let resultsForLogging = [];
+    const resultsForLogging = [];
     let failCount = 0;
 
     const startTime = performance.now();
@@ -1370,15 +1377,6 @@ class Tester {
     }
 
     return summary;
-  }
-}
-
-class TestResults {
-  constructor() {
-    this.filterEvenWithTestFailures = null;
-    this.failCount = null;
-    this.testCount = null;
-    this.timeTaken = null;
   }
 }
 

@@ -3,7 +3,7 @@ import Blacklister from "./blacklister.js";
 import FilterResults from "./filterResults.js";
 import Tester from "./tests/tester.js";
 import PageEngineTests from "./tests/pageEngineTests.js";
-import Logger from "./tests/logger.js";
+import Logger from "./logger.js";
 // ==UserScript==
 // @name         HN Blacklist
 // @author       booleandilemma
@@ -70,7 +70,7 @@ async function main() {
 
   blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
 
-  let filterResults = null;
+  let filterResults;
 
   if (filterEvenWithTestFailures || testResults.failCount === 0) {
     filterResults = blacklister.filterSubmissions();

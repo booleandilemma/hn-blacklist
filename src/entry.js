@@ -4,7 +4,7 @@
 class Entry {
   /**
    * Creates an entry.
-   * @param {string} input - Something the user wants to filter by.
+   * @param {string} input Something the user wants to filter by.
    * It can begin with "source:", "title:", or "user:".
    */
   constructor(input) {
@@ -48,8 +48,8 @@ class Entry {
 
   /**
    * Determines if the input is valid.
-   * @param {string} input - Something the user wants to filter by.
-   * @param {number} starCount - The number of stars in the input.
+   * @param {string} input Something the user wants to filter by.
+   * @param {number} starCount The number of stars in the input.
    * It can begin with "source:", "title:", or "user:".
    * @returns {boolean} A boole indicating whether or not the entry is valid.
    */
@@ -111,8 +111,8 @@ class Entry {
   #getCharCount(input, char) {
     let starCount = 0;
 
-    for (let c of input) {
-      if (c == char) {
+    for (const c of input) {
+      if (c === char) {
         starCount++;
       }
     }

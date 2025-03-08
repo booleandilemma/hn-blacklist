@@ -1,8 +1,17 @@
+class TestResults {
+  constructor() {
+    this.filterEvenWithTestFailures = null;
+    this.failCount = null;
+    this.testCount = null;
+    this.timeTaken = null;
+  }
+}
+
 class Tester {
   runTests(testClass) {
     const tests = this.#getTests(Object.getPrototypeOf(testClass));
 
-    let resultsForLogging = [];
+    const resultsForLogging = [];
     let failCount = 0;
 
     const startTime = performance.now();
@@ -78,15 +87,6 @@ class Tester {
     }
 
     return summary;
-  }
-}
-
-class TestResults {
-  constructor() {
-    this.filterEvenWithTestFailures = null;
-    this.failCount = null;
-    this.testCount = null;
-    this.timeTaken = null;
   }
 }
 
