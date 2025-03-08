@@ -33,7 +33,8 @@ export default [
             "eqeqeq": ["error", "smart"],
             "@eslint-community/eslint-comments/require-description": "off",
             "class-methods-use-this": "off",
-            "no-param-reassign": "off"
+            "no-param-reassign": "off",
+            "jsdoc/require-description": "off"
         }
     },
 
