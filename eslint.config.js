@@ -1,20 +1,10 @@
-import globals from "globals";
 import eslintConfigESLint from "eslint-config-eslint";
 import eslintConfigPrettier from "eslint-config-prettier";
+import pluginJs from "@eslint/js";
 
 export default [
+    pluginJs.configs.recommended,
     {
-        languageOptions: {
-            ecmaVersion: "latest",
-            sourceType: "module",
-            globals: {
-                ...globals.browser,
-                ...globals.commonjs
-            }
-        }
-    },
-    {
-        files: ["*.js"],
         rules: {
             "class-methods-use-this": "off",
             "no-plusplus": "off",
@@ -23,9 +13,10 @@ export default [
             "quotes": "off",
             "camelcase": "off",
             "max-classes-per-file": "off",
-            "strict": "off",
             "prefer-destructuring": "off",
-            "no-alert": "off"
+            "no-alert": "off",
+            "jsdoc/require-jsdoc": 0,
+            "eqeqeq": ["error", "smart"],
         }
     },
     ...eslintConfigESLint,
