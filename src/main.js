@@ -18,7 +18,7 @@ import Logger from "./logger.js";
 // ==/UserScript==
 
 const UserScriptName = "HN Blacklist";
-const UserScriptVersion = "3.2.0";
+const UserScriptVersion = "3.2.1";
 
 function getBlacklist(filterText) {
   const blacklist = new Set();
