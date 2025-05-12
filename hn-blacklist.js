@@ -5,7 +5,7 @@
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.2.0
+// @version      3.2.1
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
@@ -74,7 +74,7 @@ async function main() {
     filterResults = new FilterResults();
   }
 
-  const timeTaken = performance.now() - startTime;
+  const timeTaken = Math.floor(performance.now() - startTime);
 
   blacklister.displayResults(timeTaken, filterResults, testResults);
 }
@@ -257,10 +257,12 @@ class Blacklister {
       if (!testResults.filterEvenWithTestFailures) {
         filteredMessage += "One or more tests failed - did not try to filter";
       } else {
-        filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+        filteredMessage += `${filterResults.submissionsFilteredBySource} by source, " + 
+          "${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
       }
     } else {
-      filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+      filteredMessage += `${filterResults.submissionsFilteredBySource} by source, " + 
+        "${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
     }
 
     document.getElementById("filteredResults").innerText = filteredMessage;
