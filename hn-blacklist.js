@@ -1320,7 +1320,7 @@ class Tester {
       resultsForLogging.push(testResult);
     }
 
-    const timeTaken = performance.now() - startTime;
+    const timeTaken = Math.floor(performance.now() - startTime);
 
     const testResults = new TestResults();
     testResults.failCount = failCount;
