@@ -178,12 +178,12 @@ class Blacklister {
       if (!testResults.filterEvenWithTestFailures) {
         filteredMessage += "One or more tests failed - did not try to filter";
       } else {
-        filteredMessage += `${filterResults.submissionsFilteredBySource} by source, " + 
-          "${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+        filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ` + 
+          `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
       }
     } else {
-      filteredMessage += `${filterResults.submissionsFilteredBySource} by source, " + 
-        "${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+      filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ` + 
+        `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
     }
 
     document.getElementById("filteredResults").innerText = filteredMessage;
