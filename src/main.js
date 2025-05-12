@@ -11,7 +11,7 @@ import Logger from "./logger.js";
 // @homepageURL  https://greasyfork.org/en/scripts/427213-hn-blacklist
 // @match        https://news.ycombinator.com/
 // @match        https://news.ycombinator.com/news*
-// @version      3.2.0
+// @version      3.2.1
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @license      GPL-3.0
