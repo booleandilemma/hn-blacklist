@@ -78,7 +78,7 @@ async function main() {
     filterResults = new FilterResults();
   }
 
-  const timeTaken = performance.now() - startTime;
+  const timeTaken = Math.floor(performance.now() - startTime);
 
   blacklister.displayResults(timeTaken, filterResults, testResults);
 }
