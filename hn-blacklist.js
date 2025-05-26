@@ -334,7 +334,7 @@ class Blacklister {
     );
     /* eslint-enable no-undef */
 
-    alert("Filters saved! Please refresh the page.");
+    alert("Settings saved! Please refresh the page.");
   }
 }
 
