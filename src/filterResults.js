@@ -1,14 +1,16 @@
+import SubmissionInfo from "./submissionInfo";
+
 /**
  * A high-level summary of the results of what was done.
  */
 class FilterResults {
   constructor() {
     /**
-     * submissionsFilteredBySource indicates the number of submissions filtered by source.
-     * @type {number}
+     * submissionsFilteredBySource a list of submission infos filtered by source.
+     * @type {SubmissionInfo[]}
      * @public
      */
-    this.submissionsFilteredBySource = 0;
+    this.submissionsFilteredBySource = [];
 
     /**
      * submissionsFilteredByTitle indicates the number of submissions filtered by title.
@@ -31,7 +33,7 @@ class FilterResults {
    */
   getTotalSubmissionsFilteredOut() {
     return (
-      this.submissionsFilteredBySource +
+      this.submissionsFilteredBySource.length +
       this.submissionsFilteredByTitle +
       this.submissionsFilteredByUser
     );

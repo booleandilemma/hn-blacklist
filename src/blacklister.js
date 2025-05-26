@@ -1,5 +1,7 @@
 import Entry from "./entry.js";
 import FilterResults from "./filterResults.js";
+import PageEngine from "./pageEngine.js";
+
 /**
  * This defines an object for orchestrating the high-level filtering logic.
  * It also handles user input and displaying results.
@@ -194,11 +196,11 @@ class Blacklister {
       if (!testResults.filterEvenWithTestFailures) {
         filteredMessage += "One or more tests failed - did not try to filter";
       } else {
-        filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ` +
+        filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, ` +
           `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
       }
     } else {
-      filteredMessage += `${filterResults.submissionsFilteredBySource} by source, ` +
+      filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, ` +
         `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
     }
 

@@ -292,12 +292,12 @@ class Blacklister {
         filteredMessage += "One or more tests failed - did not try to filter";
       } else {
         filteredMessage +=
-          `${filterResults.submissionsFilteredBySource} by source, ` +
+          `${filterResults.submissionsFilteredBySource.length} by source, ` +
           `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
       }
     } else {
       filteredMessage +=
-        `${filterResults.submissionsFilteredBySource} by source, ` +
+        `${filterResults.submissionsFilteredBySource.length} by source, ` +
         `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
     }
 
@@ -488,11 +488,11 @@ class Entry {
 class FilterResults {
   constructor() {
     /**
-     * submissionsFilteredBySource indicates the number of submissions filtered by source.
-     * @type {number}
+     * submissionsFilteredBySource a list of submission infos filtered by source.
+     * @type {SubmissionInfo[]}
      * @public
      */
-    this.submissionsFilteredBySource = 0;
+    this.submissionsFilteredBySource = [];
 
     /**
      * submissionsFilteredByTitle indicates the number of submissions filtered by title.
@@ -515,7 +515,7 @@ class FilterResults {
    */
   getTotalSubmissionsFilteredOut() {
     return (
-      this.submissionsFilteredBySource +
+      this.submissionsFilteredBySource.length +
       this.submissionsFilteredByTitle +
       this.submissionsFilteredByUser
     );
@@ -848,17 +848,45 @@ class PageEngine {
   }
 
   /**
+   * Gets a SubmissionInfo object representing the different parts of the specified submission.
+   * @param {?object} submission Specifies the HN submission.
+   * @returns {?SubmissionInfo} A SubmissionInfo object representing the different parts of the specified submission.
+   */
+  getSubmissionInfoObject(submission) {
+    if (submission === null) {
+      return null;
+    }
+
+    const titleInfo = this.getTitleInfo(submission);
+
+    const rank = this.getRank(submission);
+    const submitter = this.getSubmitter(submission);
+    const titleText = this.getTitleText(titleInfo);
+    const source = this.getSource(titleInfo);
+    const { rowIndex } = submission;
+
+    const submissionInfo = new SubmissionInfo();
+    submissionInfo.title = titleText;
+    submissionInfo.source = source;
+    submissionInfo.submitter = submitter;
+    submissionInfo.rank = rank;
+    submissionInfo.rowIndex = rowIndex;
+
+    return submissionInfo;
+  }
+
+  /**
    * Filters out (i.e. deletes) all submissions on the
    * current HN page with a domain source contained in the specified blacklist.
    * @param {Entry[]} blacklistEntries A list containing entries to filter on.
-   * @returns {number} A number indicating how many submissions were filtered out.
+   * @returns {SubmissionInfo[]} A list of submissions filtered out.
    */
   filterSubmissionsBySource(blacklistEntries) {
     const submissions = this.getSubmissions();
 
     const submissionTable = this.getSubmissionTable();
 
-    let submissionsFiltered = 0;
+    const submissionsFiltered = [];
 
     function shouldFilter(source, entry) {
       const entryText = entry.text.toLowerCase();
@@ -895,7 +923,13 @@ class PageEngine {
       }
 
       for (let i = 0; i < submissions.length; i++) {
-        const submissionInfo = this.getSubmissionInfo(submissions[i]);
+        const submissionInfo = this.getSubmissionInfoObject(submissions[i]);
+
+        if (submissionInfo === null) {
+          this.logger.logWarning(`submissionInfo is null. rank is ${i}`);
+
+          continue;
+        }
 
         if (submissionInfo.source == null) {
           this.logger.logWarning(`source is null. rank is ${i}`);
@@ -925,7 +959,7 @@ class PageEngine {
           // Delete the spacer row after the submission
           submissionTable.deleteRow(submissionInfo.rowIndex);
 
-          submissionsFiltered++;
+          submissionsFiltered.push(submissionInfo);
         }
       }
     });
@@ -1037,6 +1071,53 @@ class PageEngine {
     const tbody = mainTable.childNodes[childCount - 1];
 
     tbody.appendChild(resultsRow);
+  }
+}
+
+/**
+ * An entry for filtering submissions.
+ */
+class SubmissionInfo {
+  // TODO: update all these docus
+
+  /**
+   * Creates a submissionInfo.
+   */
+  constructor() {
+    /**
+     * prefix indicates the type of thing to filter by. It can be "source:", "title:", or "user:".
+     * @type {string}
+     * @public
+     */
+    this.title = null;
+
+    /**
+     * prefix indicates the type of thing to filter by. It can be "source:", "title:", or "user:".
+     * @type {string}
+     * @public
+     */
+    this.source = null;
+
+    /**
+     * prefix indicates the type of thing to filter by. It can be "source:", "title:", or "user:".
+     * @type {string}
+     * @public
+     */
+    this.submitter = null;
+
+    /**
+     * prefix indicates the type of thing to filter by. It can be "source:", "title:", or "user:".
+     * @type {number}
+     * @public
+     */
+    this.rank = null;
+
+    /**
+     * prefix indicates the type of thing to filter by. It can be "source:", "title:", or "user:".
+     * @type {number}
+     * @public
+     */
+    this.rowIndex = null;
   }
 }
 
