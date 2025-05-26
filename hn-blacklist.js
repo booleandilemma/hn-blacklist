@@ -287,21 +287,28 @@ class Blacklister {
 
     let filteredMessage = "Filtered: ";
 
+    let submissionsFilteredBySourceMsg = "";
+
+    for (const filteredSubmission of filterResults.submissionsFilteredBySource) {
+      submissionsFilteredBySourceMsg += filteredSubmission.title + "\\n";
+      submissionsFilteredBySourceMsg += filteredSubmission.source + "\\n\\n";
+    }
+
     if (testResults.failCount > 0) {
       if (!testResults.filterEvenWithTestFailures) {
         filteredMessage += "One or more tests failed - did not try to filter";
       } else {
-        filteredMessage +=
-          `${filterResults.submissionsFilteredBySource.length} by source, ` +
-          `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+        filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;"> ${filterResults.submissionsFilteredBySource.length} by source</a>, `;
+
+        filteredMessage += `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
       }
     } else {
-      filteredMessage +=
-        `${filterResults.submissionsFilteredBySource.length} by source, ` +
-        `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+      filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;">${filterResults.submissionsFilteredBySource.length} by source</a>, `;
+
+      filteredMessage += `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
     }
 
-    document.getElementById("filteredResults").innerText = filteredMessage;
+    document.getElementById("filteredResults").innerHTML = filteredMessage;
     document.getElementById("validityResults").innerText = entryValidityMessage;
     document.getElementById("executionTimeResults").innerText =
       `Execution Time: ${timeTaken} ms`;
