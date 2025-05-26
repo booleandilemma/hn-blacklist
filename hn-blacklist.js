@@ -294,16 +294,13 @@ class Blacklister {
       submissionsFilteredBySourceMsg += filteredSubmission.source + "\\n\\n";
     }
 
-    if (testResults.failCount > 0) {
-      if (!testResults.filterEvenWithTestFailures) {
-        filteredMessage += "One or more tests failed - did not try to filter";
-      } else {
-        filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;"> ${filterResults.submissionsFilteredBySource.length} by source</a>, `;
-
-        filteredMessage += `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
-      }
-    } else {
-      filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;">${filterResults.submissionsFilteredBySource.length} by source</a>, `;
+    if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
+      filteredMessage += "One or more tests failed - did not try to filter";
+    } else if (
+      testResults.failCount === 0 ||
+      testResults.filterEvenWithTestFailures
+    ) {
+      filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;"> ${filterResults.submissionsFilteredBySource.length} by source</a>, `;
 
       filteredMessage += `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
     }
