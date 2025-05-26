@@ -52,9 +52,20 @@ async function main() {
 
   /* eslint-disable no-undef */
   const filterText = (await GM.getValue("filters")) ?? "";
+
   const filterEvenWithTestFailures = await GM.getValue(
     "filterEvenWithTestFailures",
   );
+
+  let reindexSubmissions = await GM.getValue("reindexSubmissions");
+
+  /* We check if reindexSubmissions has never
+   * been set before, and if it hasn't, we default it to true.
+   */
+  if (typeof reindexSubmissions == "undefined") {
+    reindexSubmissions = true;
+  }
+
   /* eslint-enable no-undef */
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
@@ -64,12 +75,17 @@ async function main() {
   const blacklister = new Blacklister(pageEngine, blacklist, logger);
   blacklister.warnAboutInvalidBlacklistEntries();
 
-  blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
+  blacklister.displayUI(
+    testResults,
+    filterText,
+    filterEvenWithTestFailures,
+    reindexSubmissions,
+  );
 
   let filterResults;
 
   if (filterEvenWithTestFailures || testResults.failCount === 0) {
-    filterResults = blacklister.filterSubmissions();
+    filterResults = blacklister.filterSubmissions(reindexSubmissions);
   } else {
     filterResults = new FilterResults();
   }
@@ -134,7 +150,7 @@ class Blacklister {
    * See the reindexSubmissions function of PageEngine for details.
    * @returns {FilterResults} An object containing how many submissions were filtered out.
    */
-  filterSubmissions() {
+  filterSubmissions(reindexSubmissions) {
     const topRank = this.pageEngine.getTopRank();
 
     const validEntries = this.blacklistEntries.filter((e) => e.isValid);
@@ -152,9 +168,13 @@ class Blacklister {
     filterResults.submissionsFilteredByUser = submissionsFilteredByUser;
 
     if (filterResults.getTotalSubmissionsFilteredOut() > 0) {
-      this.logger.logInfo("Reindexing submissions");
+      if (reindexSubmissions) {
+        this.logger.logInfo("Reindexing submissions");
 
-      this.pageEngine.reindexSubmissions(topRank);
+        this.pageEngine.reindexSubmissions(topRank);
+      } else {
+        this.logger.logInfo("Skipping reindexing of submissions");
+      }
     } else {
       this.logger.logInfo("Nothing filtered");
     }
@@ -162,7 +182,12 @@ class Blacklister {
     return filterResults;
   }
 
-  displayUI(testResults, filterText, filterEvenWithTestFailures) {
+  displayUI(
+    testResults,
+    filterText,
+    filterEvenWithTestFailures,
+    reindexSubmissions,
+  ) {
     const hnBlacklistTable = document.getElementById("hnBlacklist");
 
     if (hnBlacklistTable != null) {
@@ -200,6 +225,11 @@ class Blacklister {
             </tr>
             <tr>
               <td>
+                <input id="chkReindexSubmissions" type="checkbox" checked>Reindex submissions</input>
+              </td>
+            </tr>
+            <tr>
+              <td>
                 <button id="btnSaveFilters">Save</button>
               </td>
             </tr>
@@ -227,6 +257,10 @@ class Blacklister {
 
     document.getElementById("chkfilterEvenWithTestFailures").checked =
       filterEvenWithTestFailures;
+
+    document.getElementById("chkReindexSubmissions").checked =
+      reindexSubmissions;
+
     document.getElementById("btnSaveFilters").onclick = this.#saveInputsAsync;
   }
 
@@ -282,11 +316,21 @@ class Blacklister {
       "chkfilterEvenWithTestFailures",
     );
 
+    const chkReindexSubmissionsElement = document.getElementById(
+      "chkReindexSubmissions",
+    );
+
     /* eslint-disable no-undef */
     await GM.setValue("filters", filterText);
+
     await GM.setValue(
       "filterEvenWithTestFailures",
       chkfilterEvenWithTestFailuresElement.checked,
+    );
+
+    await GM.setValue(
+      "reindexSubmissions",
+      chkReindexSubmissionsElement.checked,
     );
     /* eslint-enable no-undef */
 
