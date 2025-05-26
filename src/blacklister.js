@@ -202,7 +202,12 @@ class Blacklister {
     if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
       filteredMessage += "One or more tests failed - did not try to filter";
     } else if (testResults.failCount === 0 || testResults.filterEvenWithTestFailures) {
-      filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;"> ${filterResults.submissionsFilteredBySource.length} by source</a>, `;
+
+      if (filterResults.submissionsFilteredBySource.length > 0) {
+        filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;"> ${filterResults.submissionsFilteredBySource.length} by source</a>, `;
+      } else {
+        filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, `;
+      }
 
       filteredMessage += `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
     }
