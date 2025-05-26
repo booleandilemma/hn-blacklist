@@ -56,9 +56,22 @@ async function main() {
 
   /* eslint-disable no-undef */
   const filterText = (await GM.getValue("filters")) ?? "";
+
   const filterEvenWithTestFailures = await GM.getValue(
     "filterEvenWithTestFailures",
   );
+
+  let reindexSubmissions = await GM.getValue(
+    "reindexSubmissions",
+  );
+
+  /* We check if reindexSubmissions has never 
+   * been set before, and if it hasn't, we default it to true.
+   */
+  if (typeof reindexSubmissions == "undefined") {
+    reindexSubmissions = true;
+  }
+
   /* eslint-enable no-undef */
 
   testResults.filterEvenWithTestFailures = filterEvenWithTestFailures;
@@ -68,12 +81,12 @@ async function main() {
   const blacklister = new Blacklister(pageEngine, blacklist, logger);
   blacklister.warnAboutInvalidBlacklistEntries();
 
-  blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures);
+  blacklister.displayUI(testResults, filterText, filterEvenWithTestFailures, reindexSubmissions);
 
   let filterResults;
 
   if (filterEvenWithTestFailures || testResults.failCount === 0) {
-    filterResults = blacklister.filterSubmissions();
+    filterResults = blacklister.filterSubmissions(reindexSubmissions);
   } else {
     filterResults = new FilterResults();
   }
