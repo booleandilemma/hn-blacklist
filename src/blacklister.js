@@ -123,7 +123,7 @@ class Blacklister {
             </tr>
             <tr>
               <td>
-                <input id="chkfilterEvenWithTestFailures" type="checkbox">Filter even with test failures</input>
+                <input id="chkFilterEvenWithTestFailures" type="checkbox">Filter even with test failures</input>
               </td>
             </tr>
             <tr>
@@ -158,7 +158,7 @@ class Blacklister {
 
     this.pageEngine.displayResults(statsRow);
 
-    document.getElementById("chkfilterEvenWithTestFailures").checked =
+    document.getElementById("chkFilterEvenWithTestFailures").checked =
       filterEvenWithTestFailures;
 
     document.getElementById("chkReindexSubmissions").checked =
@@ -213,8 +213,8 @@ class Blacklister {
 
     const filterText = filtersElement.value.trim();
 
-    const chkfilterEvenWithTestFailuresElement = document.getElementById(
-      "chkfilterEvenWithTestFailures",
+    const chkFilterEvenWithTestFailuresElement = document.getElementById(
+      "chkFilterEvenWithTestFailures",
     );
 
     const chkReindexSubmissionsElement = document.getElementById(
@@ -226,7 +226,7 @@ class Blacklister {
 
     await GM.setValue(
       "filterEvenWithTestFailures",
-      chkfilterEvenWithTestFailuresElement.checked,
+      chkFilterEvenWithTestFailuresElement.checked,
     );
 
     await GM.setValue(
