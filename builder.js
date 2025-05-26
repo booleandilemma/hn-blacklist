@@ -63,7 +63,7 @@ function insertUseStrict(mainContent) {
 
     results += `${line}\n`;
 
-    if (line === "// ==/UserScript==") {
+    if (line.startsWith("// ==/UserScript==")) {
       insertOnNextLine = true;
     }
   }
