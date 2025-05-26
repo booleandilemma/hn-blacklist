@@ -195,8 +195,8 @@ class Blacklister {
     let submissionsFilteredBySourceMsg = "";
 
     for (const filteredSubmission of filterResults.submissionsFilteredBySource) {
-      submissionsFilteredBySourceMsg += filteredSubmission.title + "\\n";
-      submissionsFilteredBySourceMsg += filteredSubmission.source + "\\n\\n";
+      submissionsFilteredBySourceMsg += "Title: " + filteredSubmission.title + "\\n";
+      submissionsFilteredBySourceMsg += "Source: " + filteredSubmission.source + "\\n\\n";
     }
 
     if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
