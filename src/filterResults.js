@@ -13,7 +13,7 @@ class FilterResults {
     this.submissionsFilteredBySource = [];
 
     /**
-     * submissionsFilteredByTitle indicates the number of submissions filtered by title.
+     * submissionsFilteredByTitle a list of submission infos filtered by title.
      * @type {SubmissionInfo[]}
      * @public
      */
