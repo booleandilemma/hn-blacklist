@@ -14,10 +14,10 @@ class FilterResults {
 
     /**
      * submissionsFilteredByTitle indicates the number of submissions filtered by title.
-     * @type {number}
+     * @type {SubmissionInfo[]}
      * @public
      */
-    this.submissionsFilteredByTitle = 0;
+    this.submissionsFilteredByTitle = [];
 
     /**
      * submissionsFilteredByUser a list of submission infos filtered by user.
@@ -34,7 +34,7 @@ class FilterResults {
   getTotalSubmissionsFilteredOut() {
     return (
       this.submissionsFilteredBySource.length +
-      this.submissionsFilteredByTitle +
+      this.submissionsFilteredByTitle.length +
       this.submissionsFilteredByUser.length
     );
   }

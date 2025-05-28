@@ -423,14 +423,14 @@ class PageEngine {
    * Filters out (i.e. deletes) all submissions on the
    * current HN page with a title substring contained in the specified blacklist.
    * @param {Entry[]} blacklistEntries A list containing entries to filter on.
-   * @returns {number} A number indicating how many submissions were filtered out.
+   * @returns {SubmissionInfo[]} A list of submissions filtered out.
    */
   filterSubmissionsByTitle(blacklistEntries) {
     const submissions = this.getSubmissions();
 
     const submissionTable = this.getSubmissionTable();
 
-    let submissionsFiltered = 0;
+    const submissionsFiltered = [];
 
     blacklistEntries.forEach((entry) => {
       if (entry.prefix !== "title") {
@@ -438,7 +438,13 @@ class PageEngine {
       }
 
       for (let j = 0; j < submissions.length; j++) {
-        const submissionInfo = this.getSubmissionInfo(submissions[j]);
+        const submissionInfo = this.getSubmissionInfoObject(submissions[j]);
+        
+        if (submissionInfo === null) {
+          this.logger.logWarning(`submissionInfo is null. rank is ${i}`);
+
+          continue;
+        }
 
         if (
           submissionInfo.title.toLowerCase().includes(entry.text.toLowerCase())
@@ -456,7 +462,7 @@ class PageEngine {
           // Delete the spacer row after the submission
           submissionTable.deleteRow(submissionInfo.rowIndex);
 
-          submissionsFiltered++;
+          submissionsFiltered.push(submissionInfo);
         }
       }
     });

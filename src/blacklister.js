@@ -199,6 +199,12 @@ class Blacklister {
       submissionsFilteredBySourceMsg += "Source: " + filteredSubmission.source + "\\n\\n";
     }
 
+    let submissionsFilteredByTitleMsg = "";
+
+    for (const filteredSubmission of filterResults.submissionsFilteredByTitle) {
+      submissionsFilteredByTitleMsg += "Title: " + filteredSubmission.title + "\\n\\n";
+    }
+
     let submissionsFilteredByUserMsg = "";
 
     for (const filteredSubmission of filterResults.submissionsFilteredByUser) {
@@ -206,6 +212,7 @@ class Blacklister {
         "Title: " + filteredSubmission.title + "\\n";
       submissionsFilteredByUserMsg +=
         "User: " + filteredSubmission.submitter + "\\n\\n";
+
     }
 
     if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
@@ -216,6 +223,12 @@ class Blacklister {
         filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;"> ${filterResults.submissionsFilteredBySource.length} by source</a>, `;
       } else {
         filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, `;
+      }
+
+      if (filterResults.submissionsFilteredByTitle.length > 0) {
+        filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredByTitleMsg}'); return false;"> ${filterResults.submissionsFilteredByTitle.length} by title</a>, `;
+      } else {
+        filteredMessage += `${filterResults.submissionsFilteredByTitle.length} by title, `;
       }
 
       if (filterResults.submissionsFilteredByUser.length > 0) {
