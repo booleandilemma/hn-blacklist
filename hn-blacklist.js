@@ -321,13 +321,13 @@ class Blacklister {
       if (filterResults.submissionsFilteredBySource.length > 0) {
         filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;"> ${filterResults.submissionsFilteredBySource.length} by source</a>, `;
       } else {
-        filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, `;
+        filteredMessage += "0 by source, ";
       }
 
       if (filterResults.submissionsFilteredByTitle.length > 0) {
         filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredByTitleMsg}'); return false;"> ${filterResults.submissionsFilteredByTitle.length} by title</a>, `;
       } else {
-        filteredMessage += `${filterResults.submissionsFilteredByTitle.length} by title, `;
+        filteredMessage += "0 by title, ";
       }
 
       if (filterResults.submissionsFilteredByUser.length > 0) {
@@ -854,33 +854,6 @@ class PageEngine {
     }
 
     return hrefUser.replace("user?id=", "");
-  }
-
-  /**
-   * Returns an object representing the different parts of the specified submission.
-   * These are: title, source, rank, and rowIndex.
-   * @param {?object} submission Specifies the HN submission.
-   */
-  getSubmissionInfo(submission) {
-    if (submission === null) {
-      return null;
-    }
-
-    const titleInfo = this.getTitleInfo(submission);
-
-    const rank = this.getRank(submission);
-    const submitter = this.getSubmitter(submission);
-    const titleText = this.getTitleText(titleInfo);
-    const source = this.getSource(titleInfo);
-    const { rowIndex } = submission;
-
-    return {
-      title: titleText,
-      source,
-      submitter,
-      rank,
-      rowIndex,
-    };
   }
 
   /**

@@ -273,33 +273,6 @@ class PageEngine {
   }
 
   /**
-   * Returns an object representing the different parts of the specified submission.
-   * These are: title, source, rank, and rowIndex.
-   * @param {?object} submission Specifies the HN submission.
-   */
-  getSubmissionInfo(submission) {
-    if (submission === null) {
-      return null;
-    }
-
-    const titleInfo = this.getTitleInfo(submission);
-
-    const rank = this.getRank(submission);
-    const submitter = this.getSubmitter(submission);
-    const titleText = this.getTitleText(titleInfo);
-    const source = this.getSource(titleInfo);
-    const { rowIndex } = submission;
-
-    return {
-      title: titleText,
-      source,
-      submitter,
-      rank,
-      rowIndex,
-    };
-  }
-
-  /**
    * Gets a SubmissionInfo object representing the different parts of the specified submission.
    * @param {?object} submission Specifies the HN submission.
    * @returns {?SubmissionInfo} A SubmissionInfo object representing the different parts of the specified submission.
