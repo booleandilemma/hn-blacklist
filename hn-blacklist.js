@@ -296,6 +296,13 @@ class Blacklister {
         "Source: " + filteredSubmission.source + "\\n\\n";
     }
 
+    let submissionsFilteredByTitleMsg = "";
+
+    for (const filteredSubmission of filterResults.submissionsFilteredByTitle) {
+      submissionsFilteredByTitleMsg +=
+        "Title: " + filteredSubmission.title + "\\n\\n";
+    }
+
     if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
       filteredMessage += "One or more tests failed - did not try to filter";
     } else if (
@@ -308,7 +315,13 @@ class Blacklister {
         filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, `;
       }
 
-      filteredMessage += `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+      if (filterResults.submissionsFilteredByTitle.length > 0) {
+        filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredByTitleMsg}'); return false;"> ${filterResults.submissionsFilteredByTitle.length} by title</a>, `;
+      } else {
+        filteredMessage += `${filterResults.submissionsFilteredByTitle.length} by title, `;
+      }
+
+      filteredMessage += `${filterResults.submissionsFilteredByUser} by user`;
     }
 
     document.getElementById("filteredResults").innerHTML = filteredMessage;
@@ -506,10 +519,10 @@ class FilterResults {
 
     /**
      * submissionsFilteredByTitle indicates the number of submissions filtered by title.
-     * @type {number}
+     * @type {SubmissionInfo[]}
      * @public
      */
-    this.submissionsFilteredByTitle = 0;
+    this.submissionsFilteredByTitle = [];
 
     /**
      * submissionsFilteredByUser indicates the number of submissions filtered by user.
@@ -526,7 +539,7 @@ class FilterResults {
   getTotalSubmissionsFilteredOut() {
     return (
       this.submissionsFilteredBySource.length +
-      this.submissionsFilteredByTitle +
+      this.submissionsFilteredByTitle.length +
       this.submissionsFilteredByUser
     );
   }
@@ -981,14 +994,14 @@ class PageEngine {
    * Filters out (i.e. deletes) all submissions on the
    * current HN page with a title substring contained in the specified blacklist.
    * @param {Entry[]} blacklistEntries A list containing entries to filter on.
-   * @returns {number} A number indicating how many submissions were filtered out.
+   * @returns {SubmissionInfo[]} A list of submissions filtered out.
    */
   filterSubmissionsByTitle(blacklistEntries) {
     const submissions = this.getSubmissions();
 
     const submissionTable = this.getSubmissionTable();
 
-    let submissionsFiltered = 0;
+    const submissionsFiltered = [];
 
     blacklistEntries.forEach((entry) => {
       if (entry.prefix !== "title") {
@@ -996,7 +1009,13 @@ class PageEngine {
       }
 
       for (let j = 0; j < submissions.length; j++) {
-        const submissionInfo = this.getSubmissionInfo(submissions[j]);
+        const submissionInfo = this.getSubmissionInfoObject(submissions[j]);
+
+        if (submissionInfo === null) {
+          this.logger.logWarning(`submissionInfo is null. rank is ${i}`);
+
+          continue;
+        }
 
         if (
           submissionInfo.title.toLowerCase().includes(entry.text.toLowerCase())
@@ -1014,7 +1033,7 @@ class PageEngine {
           // Delete the spacer row after the submission
           submissionTable.deleteRow(submissionInfo.rowIndex);
 
-          submissionsFiltered++;
+          submissionsFiltered.push(submissionInfo);
         }
       }
     });
