@@ -204,7 +204,7 @@ class Blacklister {
     for (const filteredSubmission of filterResults.submissionsFilteredByUser) {
       submissionsFilteredByUserMsg +=
         "Title: " + filteredSubmission.title + "\\n";
-      submissionsFilteredBySourceMsg +=
+      submissionsFilteredByUserMsg +=
         "User: " + filteredSubmission.submitter + "\\n\\n";
     }
 
