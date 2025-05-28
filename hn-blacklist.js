@@ -303,6 +303,15 @@ class Blacklister {
         "Title: " + filteredSubmission.title + "\\n\\n";
     }
 
+    let submissionsFilteredByUserMsg = "";
+
+    for (const filteredSubmission of filterResults.submissionsFilteredByUser) {
+      submissionsFilteredByUserMsg +=
+        "Title: " + filteredSubmission.title + "\\n";
+      submissionsFilteredByUserMsg +=
+        "User: " + filteredSubmission.submitter + "\\n\\n";
+    }
+
     if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
       filteredMessage += "One or more tests failed - did not try to filter";
     } else if (
@@ -321,7 +330,11 @@ class Blacklister {
         filteredMessage += `${filterResults.submissionsFilteredByTitle.length} by title, `;
       }
 
-      filteredMessage += `${filterResults.submissionsFilteredByUser} by user`;
+      if (filterResults.submissionsFilteredByUser.length > 0) {
+        filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredByUserMsg}'); return false;"> ${filterResults.submissionsFilteredByUser.length} by user</a>`;
+      } else {
+        filteredMessage += "0 by user";
+      }
     }
 
     document.getElementById("filteredResults").innerHTML = filteredMessage;
@@ -525,11 +538,11 @@ class FilterResults {
     this.submissionsFilteredByTitle = [];
 
     /**
-     * submissionsFilteredByUser indicates the number of submissions filtered by user.
-     * @type {number}
+     * submissionsFilteredByUser a list of submission infos filtered by user.
+     * @type {SubmissionInfo[]}
      * @public
      */
-    this.submissionsFilteredByUser = 0;
+    this.submissionsFilteredByUser = [];
   }
 
   /**
@@ -540,7 +553,7 @@ class FilterResults {
     return (
       this.submissionsFilteredBySource.length +
       this.submissionsFilteredByTitle.length +
-      this.submissionsFilteredByUser
+      this.submissionsFilteredByUser.length
     );
   }
 }
@@ -1052,7 +1065,7 @@ class PageEngine {
 
     const submissionTable = this.getSubmissionTable();
 
-    let submissionsFiltered = 0;
+    const submissionsFiltered = [];
 
     blacklistEntries.forEach((entry) => {
       if (entry.prefix !== "user") {
@@ -1060,7 +1073,13 @@ class PageEngine {
       }
 
       for (let j = 0; j < submissions.length; j++) {
-        const submissionInfo = this.getSubmissionInfo(submissions[j]);
+        const submissionInfo = this.getSubmissionInfoObject(submissions[j]);
+
+        if (submissionInfo === null) {
+          this.logger.logWarning(`submissionInfo is null. rank is ${i}`);
+
+          continue;
+        }
 
         if (
           submissionInfo.submitter != null &&
@@ -1079,7 +1098,7 @@ class PageEngine {
           // Delete the spacer row after the submission
           submissionTable.deleteRow(submissionInfo.rowIndex);
 
-          submissionsFiltered++;
+          submissionsFiltered.push(submissionInfo);
         }
       }
     });

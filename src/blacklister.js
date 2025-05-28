@@ -212,7 +212,6 @@ class Blacklister {
         "Title: " + filteredSubmission.title + "\\n";
       submissionsFilteredByUserMsg +=
         "User: " + filteredSubmission.submitter + "\\n\\n";
-
     }
 
     if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
