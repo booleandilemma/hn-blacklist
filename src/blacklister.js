@@ -221,13 +221,13 @@ class Blacklister {
       if (filterResults.submissionsFilteredBySource.length > 0) {
         filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredBySourceMsg}'); return false;"> ${filterResults.submissionsFilteredBySource.length} by source</a>, `;
       } else {
-        filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, `;
+        filteredMessage += "0 by source, ";
       }
 
       if (filterResults.submissionsFilteredByTitle.length > 0) {
         filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredByTitleMsg}'); return false;"> ${filterResults.submissionsFilteredByTitle.length} by title</a>, `;
       } else {
-        filteredMessage += `${filterResults.submissionsFilteredByTitle.length} by title, `;
+        filteredMessage += "0 by title, ";
       }
 
       if (filterResults.submissionsFilteredByUser.length > 0) {
