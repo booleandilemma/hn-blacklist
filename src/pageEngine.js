@@ -475,7 +475,7 @@ class PageEngine {
 
     const submissionTable = this.getSubmissionTable();
 
-    let submissionsFiltered = 0;
+    const submissionsFiltered = [];
 
     blacklistEntries.forEach((entry) => {
       if (entry.prefix !== "user") {
@@ -483,7 +483,13 @@ class PageEngine {
       }
 
       for (let j = 0; j < submissions.length; j++) {
-        const submissionInfo = this.getSubmissionInfo(submissions[j]);
+        const submissionInfo = this.getSubmissionInfoObject(submissions[j]);
+
+        if (submissionInfo === null) {
+          this.logger.logWarning(`submissionInfo is null. rank is ${i}`);
+
+          continue;
+        }
 
         if (
           submissionInfo.submitter != null &&
@@ -502,7 +508,7 @@ class PageEngine {
           // Delete the spacer row after the submission
           submissionTable.deleteRow(submissionInfo.rowIndex);
 
-          submissionsFiltered++;
+          submissionsFiltered.push(submissionInfo);
         }
       }
     });

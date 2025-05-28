@@ -199,6 +199,15 @@ class Blacklister {
       submissionsFilteredBySourceMsg += "Source: " + filteredSubmission.source + "\\n\\n";
     }
 
+    let submissionsFilteredByUserMsg = "";
+
+    for (const filteredSubmission of filterResults.submissionsFilteredByUser) {
+      submissionsFilteredByUserMsg +=
+        "Title: " + filteredSubmission.title + "\\n";
+      submissionsFilteredBySourceMsg +=
+        "User: " + filteredSubmission.submitter + "\\n\\n";
+    }
+
     if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
       filteredMessage += "One or more tests failed - did not try to filter";
     } else if (testResults.failCount === 0 || testResults.filterEvenWithTestFailures) {
@@ -209,7 +218,11 @@ class Blacklister {
         filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, `;
       }
 
-      filteredMessage += `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+      if (filterResults.submissionsFilteredByUser.length > 0) {
+        filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredByUserMsg}'); return false;"> ${filterResults.submissionsFilteredByUser.length} by user</a>`;
+      } else {
+        filteredMessage += "0 by user";
+      }
     }
 
     document.getElementById("filteredResults").innerHTML = filteredMessage;
