@@ -1031,7 +1031,7 @@ class PageEngine {
    * Filters out (i.e. deletes) all submissions on the
    * current HN page submitted by the specified user.
    * @param {Entry[]} blacklistEntries A list containing entries to filter on.
-   * @returns {number} A number indicating how many submissions were filtered out.
+   * @returns {SubmissionInfo[]} A list of submissions filtered out.
    */
   filterSubmissionsByUser(blacklistEntries) {
     const submissions = this.getSubmissions();
