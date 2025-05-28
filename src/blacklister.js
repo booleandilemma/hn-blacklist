@@ -199,6 +199,12 @@ class Blacklister {
       submissionsFilteredBySourceMsg += "Source: " + filteredSubmission.source + "\\n\\n";
     }
 
+    let submissionsFilteredByTitleMsg = "";
+
+    for (const filteredSubmission of filterResults.submissionsFilteredByTitle) {
+      submissionsFilteredByTitleMsg += "Title: " + filteredSubmission.title + "\\n\\n";
+    }
+
     if (testResults.failCount > 0 && !testResults.filterEvenWithTestFailures) {
       filteredMessage += "One or more tests failed - did not try to filter";
     } else if (testResults.failCount === 0 || testResults.filterEvenWithTestFailures) {
@@ -209,7 +215,13 @@ class Blacklister {
         filteredMessage += `${filterResults.submissionsFilteredBySource.length} by source, `;
       }
 
-      filteredMessage += `${filterResults.submissionsFilteredByTitle} by title, ${filterResults.submissionsFilteredByUser} by user`;
+      if (filterResults.submissionsFilteredByTitle.length > 0) {
+        filteredMessage += `<a href="#" onclick="alert('${submissionsFilteredByTitleMsg}'); return false;"> ${filterResults.submissionsFilteredByTitle.length} by title</a>, `;
+      } else {
+        filteredMessage += `${filterResults.submissionsFilteredByTitle.length} by title, `;
+      }
+
+      filteredMessage += `${filterResults.submissionsFilteredByUser} by user`;
     }
 
     document.getElementById("filteredResults").innerHTML = filteredMessage;
